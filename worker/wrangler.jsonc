@@ -6,7 +6,7 @@
   // Which version of Cloudflare's rules to follow
   "compatibility_date": "2026-11-01",
   // Your teammate's Cloudflare account
-  "account_id": "PASTE-ACCOUNT-ID-HERE",
+  "account_id": "526e0d8833ad2cde60d0c21ec776cf41",
   // The binding: inside the code, DATA means the firms-data bucket
   "r2_buckets": [
     { "binding": "DATA", "bucket_name": "firms-data" }
