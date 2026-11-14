@@ -225,3 +225,6 @@ analysis.txt
 tmp/
 tmp_backfill/
 tmp_silver/
+
+# Jack
+.claude/

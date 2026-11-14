@@ -27,7 +27,8 @@ tools/           quick checks on the data in R2
 exploration/     exploratory analysis
 app/             web app (added as we build)
 worker/          Cloudflare Worker (added as we build)
-docs/            method notes and submission material (added as we build)
+docs/            challenge.md (official text), youtube_transcript.md (challenge video),
+                 harmonization_data_brief.md (data, findings, method; start here)
 ```
 
 ## Setup
