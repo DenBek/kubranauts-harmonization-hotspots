@@ -3,15 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Terms · Burning activity</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Terms</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header id="site-header"></header>
-  <main class="glossary">
+  <main id="main" class="glossary">
+    <div class="page-head">
     <p class="eyebrow">NASA Space Apps · Team Kubranauts</p>
     <h1>Terms</h1>
     <p class="lede">A cell on the calendar is one month. A cell on the map is a square of the fire grid. They are not the same thing. The calendar’s job is a fire record an emergency manager can compare across years, even though the satellite changed from MODIS to VIIRS.</p>
+    </div>
+    <div class="glossary-layout">
+    <aside class="glossary-side">
+      <label class="field">Search the terms
+        <input type="search" id="term-search" placeholder="e.g. ratio, VIIRS, rank" autocomplete="off" aria-describedby="term-count">
+      </label>
+      <p class="small muted" id="term-count" aria-live="polite"></p>
     <nav class="glossary-toc" aria-label="Terms">
       <a href="#cell-day">Cell-day</a>
       <a href="#hotspot">Hotspot</a>
@@ -44,6 +54,8 @@
       <a href="#region">Region</a>
       <a href="#firms">FIRMS</a>
     </nav>
+    </aside>
+    <div class="glossary-body">
 
     <h2>The count</h2>
     <article class="panel" id="cell-day">
@@ -179,7 +191,12 @@
       <h3>FIRMS</h3>
       <p>NASA’s Fire Information for Resource Management System, the source of the MODIS and VIIRS active-fire detections this project harmonizes. The figures on the site today are sample numbers for the layout. They are not FIRMS detections, and the map circles are not observed burn scars. A banner on each page says which.</p>
     </article>
+      <p class="glossary-empty" id="term-empty" hidden>No term matches that search.</p>
+    </div>
+    </div>
   </main>
+  <script src="gold.js"></script>
   <script src="nav.js"></script>
+  <script src="glossary.js"></script>
 </body>
 </html>

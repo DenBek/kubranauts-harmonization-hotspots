@@ -7,6 +7,8 @@ The site can be clicked through on sample data before any Cloudflare setup. Live
 ## Stack
 
 - Pages: HTML, CSS, and JavaScript. No React and no build.
+- Charts: a small SVG kit in `web/charts.js` (bars, line with normal-range band, sparklines, tooltips, table view). No chart library.
+- Themes: light and dark from the CSS tokens at the top of `web/styles.css`. The header toggle overrides the system setting. Data colors (anomaly classes, map ramp, sensors) were checked for color-blind separation and contrast in both themes; change them there, not in page code.
 - Map: Leaflet 1.9.4 from a pinned CDN, plus OpenStreetMap tiles. Both need a network when the map is open. The cell circles still draw if the tiles fail. Attribution is on the map.
 - API: Pages Functions in `functions/`. Local preview uses `npx wrangler pages dev web`. Wrangler is not a production dependency.
 - Node: only for that local command. The Codespace image already has it.
@@ -29,14 +31,17 @@ No Cloudflare login is required. With no R2 credentials, each API route returns 
 
 | Page | What it shows |
 |---|---|
-| `web/index.html` | Headline for the selected region |
-| `web/map.html` | Clickable cells from `gold_cell_monthly` |
-| `web/calendar.html` | Month-by-year anomaly calendar from `gold_region_monthly` |
-| `web/year.html` | Annual bars, season, analogs, and calibration ratios |
-| `web/briefing.html` | SMS preview. Twilio is not connected |
-| `web/glossary.html` | Definitions of the units and comparisons |
+| `web/index.html` | Home page: the map. Cells from `gold_cell_monthly` with a play-through timeline, cell history, and an area box (drawn, current view, or typed corners) with CSV export |
+| `web/overview.html` | Headline, five indicators, season against the usual year, last 12 months, both regions |
+| `web/map.html` | Old address of the map. Forwards to the home page and keeps `?region=&year=&month=` |
+| `web/calendar.html` | Month-by-year anomaly calendar from `gold_region_monthly`, keyboard navigable, with the month across years and the year by sensor |
+| `web/year.html` | Annual bars, season strip, analogs with running totals, and calibration ratios |
+| `web/briefing.html` | SMS preview on a phone, with character and segment count. Twilio is not connected |
+| `web/glossary.html` | Definitions of the units and comparisons, with live search |
 
-A new page is a new HTML file that links `styles.css`, `nav.js`, and `gold.js`, plus one entry in `web/nav.js`.
+The region picker lives in the header and is shared by every page (`?region=` in the URL, remembered in the browser). Selections are in the URL too (`?year=&month=&metric=&cell=`), so a link opens the same view.
+
+A new page is a new HTML file that links `styles.css` and then loads `gold.js`, `charts.js`, and `nav.js` in that order, plus one entry in `PAGES` in `web/nav.js`. Pages listen for the `regionchange` event instead of owning a region select.
 
 ## API
 
