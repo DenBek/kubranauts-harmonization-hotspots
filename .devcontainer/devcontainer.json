@@ -1,0 +1,20 @@
+{
+  "name": "Kubranauts: MODIS and VIIRS hot spot harmonization",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "postCreateCommand": "pip install -r requirements.txt",
+  "secrets": {
+    "R2_KEY_ID": {
+      "description": "Cloudflare R2 API token: Access Key ID"
+    },
+    "R2_SECRET": {
+      "description": "Cloudflare R2 API token: Secret Access Key"
+    },
+    "CF_ACCOUNT_ID": {
+      "description": "Cloudflare account ID"
+    },
+    "FIRMS_MAP_KEY": {
+      "description": "NASA FIRMS MAP_KEY (free, sent by email)",
+      "documentationUrl": "https://firms.modaps.eosdis.nasa.gov/api/map_key"
+    }
+  }
+}

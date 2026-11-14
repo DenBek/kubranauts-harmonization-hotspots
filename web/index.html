@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Burning activity calendar</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main>
+    <p class="eyebrow">NASA Space Apps · Team Kubranauts</p>
+    <h1>A calendar of burning activity</h1>
+    <p class="lede">Pick a region and read the season against its own history. The figures are harmonized <a href="glossary.html#cell-day">cell-days</a>: a grid cell counted as burning on one day, after MODIS and VIIRS have been put on one scale. Raw hotspot counts from the two sensors are not comparable, which is why the calendar uses this unit. Every term is defined under <a href="glossary.html">Terms</a>.</p>
+    <p class="banner" id="data-banner" data-source="sample">Checking which dataset is loaded…</p>
+
+    <label>Region
+      <select id="region"></select>
+    </label>
+    <section class="panel" id="headline">
+      <h2 id="headline-text">Loading the summary…</h2>
+      <p id="headline-alt" class="muted"></p>
+      <div class="stats" id="headline-stats"></div>
+    </section>
+
+    <div class="actions">
+      <a class="card-link" id="link-map" href="map.html">Explore the map</a>
+      <a class="button secondary" id="link-calendar" href="calendar.html">Open the calendar</a>
+      <a class="button secondary" id="link-year" href="year.html">Year and analogs</a>
+      <a class="button secondary" id="link-briefing" href="briefing.html">Preview a text briefing</a>
+    </div>
+
+    <section class="panel">
+      <h2>Sample numbers, for now</h2>
+      <p>The pages read illustrative cell-days so the layout can be tried before the gold tables are in the bucket. The banner says so. These figures are not FIRMS detections, and the map dots are not observed burn scars.</p>
+      <h2>When a gold table is ready</h2>
+      <ol class="steps">
+        <li>Write the Parquet to <code>gold/&lt;table&gt;.parquet</code> in the <code>firms-data</code> bucket. The six names are listed in <code>WEB_DEPLOYMENT.md</code>.</li>
+        <li>In the Codespace, run <code>python scripts/export_calendar.py</code>. It writes <code>publish/&lt;table&gt;.json</code> for each file it finds.</li>
+        <li>Reload this site. A table that was exported leaves the sample. The others stay on the sample, and each banner says which.</li>
+      </ol>
+    </section>
+  </main>
+  <script src="nav.js"></script>
+  <script src="gold.js"></script>
+  <script src="overview.js"></script>
+</body>
+</html>

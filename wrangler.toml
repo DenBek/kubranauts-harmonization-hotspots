@@ -1,0 +1,18 @@
+# Cloudflare Pages project. Suggested name: kubranauts-hotspots
+# Public site: https://kubranauts-hotspots.pages.dev
+#
+# Dashboard binding must use the same variable name as below.
+#   Workers & Pages → this project → Settings → Bindings → R2
+#   Variable name: FIRMS
+#   Bucket: firms-data
+# Add it on Production and on Preview.
+#
+# Do not put R2_KEY_ID, R2_SECRET, or Twilio tokens in this file.
+
+name = "kubranauts-hotspots"
+pages_build_output_dir = "web"
+compatibility_date = "2026-11-14"
+
+[[r2_buckets]]
+binding = "FIRMS"
+bucket_name = "firms-data"

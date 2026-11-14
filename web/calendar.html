@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calendar · Burning activity</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main>
+    <p class="eyebrow">Region months</p>
+    <h1>Burning activity calendar</h1>
+    <p class="lede">Each cell is one month. The color is how that month compares with the same month in other years, not how large the number is on its own. A dark ember September means an unusually active September for this region.</p>
+    <p class="banner" id="data-banner" data-source="sample">Loading calendar…</p>
+    <div class="controls">
+      <label>Region
+        <select id="region"></select>
+      </label>
+      <label>Number in the cell
+        <select id="metric">
+          <option value="harmonized">Harmonized cell-days</option>
+          <option value="modis">MODIS cell-days</option>
+          <option value="viirs">VIIRS cell-days</option>
+        </select>
+      </label>
+      <button type="button" id="csv" class="secondary">Download CSV</button>
+    </div>
+    <section class="panel" id="detail">
+      <h2>Select a month</h2>
+    </section>
+    <div class="scroll">
+      <table id="calendar">
+        <thead>
+          <tr>
+            <th class="year">Year</th>
+            <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+            <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="muted">The five colors are fixed bins, so the same color means the same kind of departure in every region. Switching the number between harmonized, MODIS, and VIIRS does not recolor the cell. That toggle is there to show the seam: the two sensors do not count fires the same way, and VIIRS is empty before April 2018.</p>
+    <p class="legend" id="legend"></p>
+  </main>
+  <script src="nav.js"></script>
+  <script src="gold.js"></script>
+  <script src="calendar.js"></script>
+</body>
+</html>
