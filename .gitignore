@@ -227,3 +227,5 @@ tmp/
 # Wrangler local state and local Pages secrets. Never commit these.
 .wrangler/
 .dev.vars
+tmp_backfill/
+tmp_silver/
