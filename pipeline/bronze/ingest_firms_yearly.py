@@ -1,11 +1,11 @@
 """Load the FIRMS yearly country files into R2 (raw/<sensor>/<year>.parquet).
 
-  python -u scripts/backfill_firms.py              # MODIS 2000-2025 and VIIRS NOAA-20 2018-2025
-  python -u scripts/backfill_firms.py snpp         # VIIRS Suomi NPP 2012-2025 instead
-  python -u scripts/backfill_firms.py snpp test    # just the first year, to check everything works
+  python -u pipeline/bronze/ingest_firms_yearly.py              # MODIS 2000-2025 and VIIRS NOAA-20 2018-2025
+  python -u pipeline/bronze/ingest_firms_yearly.py snpp         # VIIRS Suomi NPP 2012-2025 instead
+  python -u pipeline/bronze/ingest_firms_yearly.py snpp test    # just the first year, to check everything works
 
 Skips years already in R2, so it is safe to re-run. Uses its own temp folder (tmp_backfill/)
-and a capped amount of memory, so it can run at the same time as pull_api.py.
+and a capped amount of memory, so it can run at the same time as ingest_firms_api.py.
 """
 import duckdb, os, subprocess, shutil, sys, time, pathlib
 
@@ -18,11 +18,11 @@ if "test" in sys.argv:
     JOBS = JOBS[:1]  # just the first year, to check everything works
 
 COUNTRY = r"_\d{4}_([^/]+)\.csv$"  # pulls the country name out of each CSV's filename
-TMP = pathlib.Path("tmp_backfill")  # not tmp/: pull_api.py keeps its chunks there
+TMP = pathlib.Path("tmp_backfill")  # not tmp/: ingest_firms_api.py keeps its chunks there
 FILES, SPILL = TMP / "files", TMP / "spill"
 
 con = duckdb.connect()
-con.sql("SET memory_limit = '3GB'")  # leave room for pull_api.py running alongside
+con.sql("SET memory_limit = '3GB'")  # leave room for ingest_firms_api.py running alongside
 con.sql(f"SET temp_directory = '{SPILL}'")  # big sorts spill to disk instead of running out of memory
 con.sql(f"""CREATE SECRET r2 (TYPE r2,
   KEY_ID '{os.environ["R2_KEY_ID"]}', SECRET '{os.environ["R2_SECRET"]}',
