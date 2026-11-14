@@ -3,45 +3,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Year · Burning activity</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Year</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header id="site-header"></header>
-  <main>
-    <p class="eyebrow">Year, season, analogs</p>
-    <h1>How this year compares</h1>
-    <p class="lede">The bars are the year's harmonized cell-days. The season track shows when those cell-days actually arrived. The closest years are past seasons with a similar shape up to the current month, and what those years did afterward.</p>
-    <p class="banner" id="data-banner" data-source="sample">Loading years…</p>
-    <div class="controls">
-      <label>Region
-        <select id="region"></select>
-      </label>
-      <label>Year
-        <select id="year"></select>
-      </label>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow" id="eyebrow">Year, season, analogs</p>
+      <h1>How this year compares</h1>
+      <p class="lede">The bars are each year's harmonized cell-days. The season strip shows when those cell-days arrived. The closest years are past seasons with a similar shape up to the current month, and what those years did afterward.</p>
+      <p class="banner" id="data-banner" data-source="sample"></p>
     </div>
-    <section class="panel">
-      <h2><a href="glossary.html#harmonized-cell-days">Cell-days by year</a></h2>
-      <canvas id="years" width="900" height="220" aria-label="Annual harmonized cell-days"></canvas>
-      <p id="year-note"></p>
-      <h2><a href="glossary.html#season">Season</a></h2>
-      <p class="muted" id="season-note"></p>
-      <div class="season" id="season"></div>
+
+    <div class="toolbar">
+      <span class="toolbar-label">Year</span>
+      <div class="year-chips" id="year-chips" role="group" aria-label="Year"></div>
+    </div>
+
+    <div class="grid split">
+      <section class="card" aria-labelledby="years-title">
+        <div class="card-head">
+          <div>
+            <h2 id="years-title"><a href="glossary.html#harmonized-cell-days">Cell-days by year</a></h2>
+            <p class="card-sub">Hatched bars are years with months missing, so their totals are not comparable yet. Click a bar to select the year.</p>
+          </div>
+          <button type="button" class="btn small secondary" id="years-table-btn"></button>
+        </div>
+        <div class="chart" id="years-chart"></div>
+        <div id="years-table" hidden></div>
+      </section>
+      <aside class="card" id="year-detail" aria-live="polite"></aside>
+    </div>
+
+    <section class="card" style="margin-top:1rem" aria-labelledby="season-title">
+      <div class="card-head">
+        <div>
+          <h2 id="season-title"><a href="glossary.html#season">Season</a></h2>
+          <p class="card-sub" id="season-note"></p>
+        </div>
+      </div>
+      <div class="ribbon" id="ribbon"></div>
     </section>
-    <section class="panel">
-      <h2><a href="glossary.html#analog">Closest earlier years</a></h2>
-      <p class="muted" id="analog-note"></p>
-      <div class="cards" id="analogs"></div>
+
+    <section class="card" style="margin-top:1rem" aria-labelledby="analog-title">
+      <div class="card-head">
+        <div>
+          <h2 id="analog-title"><a href="glossary.html#analog">Closest earlier years</a></h2>
+          <p class="card-sub" id="analog-note"></p>
+        </div>
+        <button type="button" class="btn small secondary" id="analog-table-btn"></button>
+      </div>
+      <div class="analog-cards" id="analogs"></div>
+      <h3 style="margin-top:1.2rem">Running total through the year</h3>
+      <p class="card-sub">The target year so far, next to its closest years for the whole year. Click a name in the legend to hide or show it.</p>
+      <div class="chart" id="analog-chart" style="margin-top:0.6rem"></div>
+      <div id="analog-table" hidden></div>
+      <div id="analog-legend" style="margin-top:0.6rem"></div>
     </section>
-    <section class="panel">
-      <h2><a href="glossary.html#calibration-ratio">Calibration ratios</a></h2>
-      <p class="muted" id="cal-note"></p>
-      <div id="ratios"></div>
+
+    <section class="card" style="margin-top:1rem" aria-labelledby="cal-title">
+      <div class="card-head">
+        <div>
+          <h2 id="cal-title"><a href="glossary.html#calibration-ratio">Calibration ratios</a></h2>
+          <p class="card-sub" id="cal-note"></p>
+        </div>
+        <button type="button" class="btn small secondary" id="cal-table-btn"></button>
+      </div>
+      <div class="chart" id="cal-chart"></div>
+      <div id="cal-table" hidden></div>
     </section>
   </main>
-  <script src="nav.js"></script>
   <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
   <script src="year.js"></script>
 </body>
 </html>
