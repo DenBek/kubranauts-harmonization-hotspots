@@ -12,10 +12,10 @@ Science-quality (SP) data is used wherever it exists, and near-real-time (NRT) o
 Writes one Parquet per sensor per year per kind, e.g. r2://firms-data/raw_api/viirs_noaa21/2024_sp.parquet
 
 Run in the Codespace terminal:
-  python -u scripts/pull_api.py test    # one request per source, nothing written: check it works and time it
-  python -u scripts/pull_api.py         # the real pull (safe to re-run: skips finished files and windows)
-  python -u scripts/pull_api.py noaa21  # also NOAA-21
-  python -u scripts/pull_api.py snpp    # also Suomi NPP
+  python -u pipeline/bronze/ingest_firms_api.py test    # one request per source, nothing written: check it works and time it
+  python -u pipeline/bronze/ingest_firms_api.py         # the real pull (safe to re-run: skips finished files and windows)
+  python -u pipeline/bronze/ingest_firms_api.py noaa21  # also NOAA-21
+  python -u pipeline/bronze/ingest_firms_api.py snpp    # also Suomi NPP
 """
 import csv, datetime as dt, io, os, pathlib, shutil, sys, time, urllib.error, urllib.request
 import duckdb
@@ -130,6 +130,8 @@ if "test" in sys.argv:
 
 # 3. The real pull: one Parquet per folder / year / kind
 con = duckdb.connect()
+con.sql("SET memory_limit = '3GB'")
+con.sql("SET temp_directory = 'tmp/spill'")
 con.sql(f"""CREATE SECRET r2 (TYPE r2,
   KEY_ID '{os.environ["R2_KEY_ID"]}', SECRET '{os.environ["R2_SECRET"]}',
   ACCOUNT_ID '{os.environ["CF_ACCOUNT_ID"]}')""")
