@@ -1,0 +1,29 @@
+{
+  "source": "sample",
+  "dataset": "sample",
+  "note": "Sample data for layout only. These figures are not FIRMS detections. Live tables replace a file when scripts/export_calendar.py writes publish/<table>.json. See WEB_DEPLOYMENT.md.",
+  "rows": [
+    {
+      "region_id": "argentina_chaco",
+      "as_of_month": "2025-09-01",
+      "headline": "September 2025: 1.646\u00d7 the usual September, rank 1 of 11.",
+      "alt_text": "Argentine Chaco in September 2025 has 33872 harmonized cell-days. September 2025: 1.646\u00d7 the usual September, rank 1 of 11. Closest earlier year through November is 2020.",
+      "month_anomaly_ratio": 1.646,
+      "month_rank_in_month": 1,
+      "ytd_cell_days": 96839,
+      "ytd_vs_median": 0.968,
+      "top_analog_year": 2020
+    },
+    {
+      "region_id": "brazil_cerrado",
+      "as_of_month": "2025-09-01",
+      "headline": "September 2025: 1.592\u00d7 the usual September, rank 1 of 11.",
+      "alt_text": "Brazilian Cerrado in September 2025 has 52215 harmonized cell-days. September 2025: 1.592\u00d7 the usual September, rank 1 of 11. Closest earlier year through November is 2020.",
+      "month_anomaly_ratio": 1.592,
+      "month_rank_in_month": 1,
+      "ytd_cell_days": 170084,
+      "ytd_vs_median": 0.87,
+      "top_analog_year": 2020
+    }
+  ]
+}

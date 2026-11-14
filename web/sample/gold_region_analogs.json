@@ -1,0 +1,79 @@
+{
+  "source": "sample",
+  "dataset": "sample",
+  "note": "Sample data for layout only. These figures are not FIRMS detections. Live tables replace a file when scripts/export_calendar.py writes publish/<table>.json. See WEB_DEPLOYMENT.md.",
+  "rows": [
+    {
+      "region_id": "argentina_chaco",
+      "target_year": 2025,
+      "through_month": 11,
+      "analog_year": 2020,
+      "rank": 1,
+      "distance": 0.1,
+      "similarity_pct": 91.0,
+      "analog_rest_of_year_cell_days": 5142,
+      "analog_rest_vs_median": 1.122,
+      "computed_at": "2025-11-14T12:00:00Z"
+    },
+    {
+      "region_id": "argentina_chaco",
+      "target_year": 2025,
+      "through_month": 11,
+      "analog_year": 2016,
+      "rank": 2,
+      "distance": 0.1,
+      "similarity_pct": 87.9,
+      "analog_rest_of_year_cell_days": 4235,
+      "analog_rest_vs_median": 0.924,
+      "computed_at": "2025-11-14T12:00:00Z"
+    },
+    {
+      "region_id": "argentina_chaco",
+      "target_year": 2025,
+      "through_month": 11,
+      "analog_year": 2019,
+      "rank": 3,
+      "distance": 0.1,
+      "similarity_pct": 87.4,
+      "analog_rest_of_year_cell_days": 3935,
+      "analog_rest_vs_median": 0.858,
+      "computed_at": "2025-11-14T12:00:00Z"
+    },
+    {
+      "region_id": "brazil_cerrado",
+      "target_year": 2025,
+      "through_month": 11,
+      "analog_year": 2020,
+      "rank": 1,
+      "distance": 0.1,
+      "similarity_pct": 87.0,
+      "analog_rest_of_year_cell_days": 7198,
+      "analog_rest_vs_median": 1.139,
+      "computed_at": "2025-11-14T12:00:00Z"
+    },
+    {
+      "region_id": "brazil_cerrado",
+      "target_year": 2025,
+      "through_month": 11,
+      "analog_year": 2016,
+      "rank": 2,
+      "distance": 0.1,
+      "similarity_pct": 87.0,
+      "analog_rest_of_year_cell_days": 5928,
+      "analog_rest_vs_median": 0.938,
+      "computed_at": "2025-11-14T12:00:00Z"
+    },
+    {
+      "region_id": "brazil_cerrado",
+      "target_year": 2025,
+      "through_month": 11,
+      "analog_year": 2019,
+      "rank": 3,
+      "distance": 0.1,
+      "similarity_pct": 85.8,
+      "analog_rest_of_year_cell_days": 5507,
+      "analog_rest_vs_median": 0.871,
+      "computed_at": "2025-11-14T12:00:00Z"
+    }
+  ]
+}

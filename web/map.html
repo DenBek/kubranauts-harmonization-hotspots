@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Map · Burning activity</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main>
+    <p class="eyebrow">Grid cells</p>
+    <h1>Where the cell-days are</h1>
+    <p class="lede">Each circle is one grid cell that was active in the selected month. Larger and darker means more cell-days. Click a circle for the sensors behind that cell. The region total on the calendar is the sum of these cells.</p>
+    <p class="banner" id="data-banner" data-source="sample">Loading cells…</p>
+    <div class="controls">
+      <label>Region
+        <select id="region"></select>
+      </label>
+      <label>Year
+        <select id="year"></select>
+      </label>
+      <label>Month
+        <select id="month"></select>
+      </label>
+      <label>Value
+        <select id="metric">
+          <option value="harmonized">Harmonized cell-days</option>
+          <option value="modis">MODIS cell-days</option>
+          <option value="viirs">VIIRS cell-days</option>
+        </select>
+      </label>
+    </div>
+    <div class="map-layout">
+      <div id="map" role="application" aria-label="Map of grid cells"></div>
+      <section class="panel" id="detail">
+        <h2>Select a cell</h2>
+        <p class="muted">Click a circle. The sample years on this map are 2024 and 2025, so both sensors are present. Months before April 2018, on the calendar, have no VIIRS.</p>
+      </section>
+    </div>
+  </main>
+  <script src="nav.js"></script>
+  <script src="gold.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="map.js"></script>
+</body>
+</html>

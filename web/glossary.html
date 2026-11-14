@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms · Burning activity</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main class="glossary">
+    <p class="eyebrow">NASA Space Apps · Team Kubranauts</p>
+    <h1>Terms</h1>
+    <p class="lede">A cell on the calendar is one month. A cell on the map is a square of the fire grid. They are not the same thing. The calendar’s job is a fire record an emergency manager can compare across years, even though the satellite changed from MODIS to VIIRS.</p>
+    <nav class="glossary-toc" aria-label="Terms">
+      <a href="#cell-day">Cell-day</a>
+      <a href="#hotspot">Hotspot</a>
+      <a href="#grid-cell">Grid cell</a>
+      <a href="#harmonized-cell-days">Harmonized cell-days</a>
+      <a href="#modis">MODIS</a>
+      <a href="#viirs">VIIRS</a>
+      <a href="#harmonization">Harmonization</a>
+      <a href="#seam">Seam</a>
+      <a href="#calibration-ratio">Calibration ratio</a>
+      <a href="#stratum">Stratum</a>
+      <a href="#source">Source</a>
+      <a href="#provisional">Provisional</a>
+      <a href="#month-still-open">Month still open</a>
+      <a href="#usual-month">Usual month</a>
+      <a href="#normal-range">Normal range</a>
+      <a href="#anomaly-ratio">Compared with usual</a>
+      <a href="#anomaly-diff">Difference</a>
+      <a href="#anomaly-class">Class</a>
+      <a href="#rank">Rank</a>
+      <a href="#percentile-rank">Percentile</a>
+      <a href="#year-to-date">Year to date</a>
+      <a href="#peak-month">Peak month</a>
+      <a href="#season">Season</a>
+      <a href="#analog">Analog</a>
+      <a href="#similarity">Similarity</a>
+      <a href="#rest-of-year">Rest of the year</a>
+      <a href="#holdout-error">Holdout error</a>
+      <a href="#fit-window">Fit window</a>
+      <a href="#region">Region</a>
+      <a href="#firms">FIRMS</a>
+    </nav>
+
+    <h2>The count</h2>
+    <article class="panel" id="cell-day">
+      <h3>Cell-day</h3>
+      <p>One grid cell detected as actively burning on one day. Three days of fire in the same cell are three cell-days. Several satellite hits in that cell on the same day still count as one. Managers need a count they can add up over a region and set against past seasons. A raw hotspot total cannot do that, because MODIS and VIIRS report different numbers of hits for the same fire.</p>
+    </article>
+    <article class="panel" id="hotspot">
+      <h3>Hotspot</h3>
+      <p>One active-fire detection from a satellite overpass, as published by FIRMS. A single fire can produce many hotspots in one cell on one day, and VIIRS usually reports more than MODIS. The map shows the hotspot count beside the cell-days so the raw detection stays visible. The calendar does not rank months by hotspots.</p>
+    </article>
+    <article class="panel" id="grid-cell">
+      <h3>Grid cell</h3>
+      <p>A square of the analysis grid. Each one has an id and a center latitude and longitude. The circle on the map sits on that center. It marks the cell, not the position of one fire. Summing the harmonized cell-days of the cells in a region gives that region’s month.</p>
+    </article>
+    <article class="panel" id="harmonized-cell-days">
+      <h3>Harmonized cell-days</h3>
+      <p>Cell-days after MODIS and VIIRS are on one scale. Where a VIIRS record exists, that record is the harmonized value and no ratio is applied. Where only MODIS exists, its cell-days are multiplied by the <a href="#calibration-ratio">calibration ratio</a> for that biome and month, which lifts them onto the VIIRS scale. The headline, the year bars, the text briefing, and the history behind the calendar color all use this figure.</p>
+    </article>
+
+    <h2>The two sensors</h2>
+    <article class="panel" id="modis">
+      <h3>MODIS</h3>
+      <p>The Moderate Resolution Imaging Spectroradiometer, on NASA’s Terra and Aqua satellites. It is the long record in this project, back to 2000, and the coarser, less sensitive active-fire sensor. Its hotspot counts run lower than VIIRS for the same burning. Years before VIIRS can only enter the calendar through calibrated MODIS.</p>
+    </article>
+    <article class="panel" id="viirs">
+      <h3>VIIRS</h3>
+      <p>The Visible Infrared Imaging Radiometer Suite. NOAA-20 is the sensor in this record, from April 2018. It sees smaller and cooler fires than MODIS, so its counts are higher. Months before it was observing have no VIIRS value. That empty stretch is expected, not a data failure.</p>
+    </article>
+    <article class="panel" id="harmonization">
+      <h3>Harmonization</h3>
+      <p>Putting both sensors on one scale so a month in 2005 can be compared with a month in 2025. The instruments changed. Without this step, a rise in the numbers can be the new satellite rather than more fire. The challenge is that common scale, not a new way of drawing fires on a map.</p>
+    </article>
+    <article class="panel" id="seam">
+      <h3>Seam</h3>
+      <p>The join where the record switches from calibrated MODIS to VIIRS. The toggle on the calendar and the map shows each sensor’s own cell-days. The color stays on the anomaly class of the harmonized series, so the seam does not look like a sudden change in how unusual the month was.</p>
+    </article>
+    <article class="panel" id="calibration-ratio">
+      <h3>Calibration ratio</h3>
+      <p>VIIRS cell-days divided by MODIS cell-days, for one stratum and one calendar month, learned from the years both sensors overlap. A ratio of 1.4 means MODIS cell-days are multiplied by 1.4. The ratio changes by month because the sensors do not disagree by the same amount all year. It is applied only when a month has to be filled from MODIS. When VIIRS is the source, the ratio is left blank.</p>
+    </article>
+    <article class="panel" id="stratum">
+      <h3>Stratum</h3>
+      <p>The biome a calibration ratio belongs to. Argentine Chaco uses stratum chaco. Brazilian Cerrado uses stratum cerrado. Fire does not look the same in each, so one global ratio would scale them wrong. A grid cell carries a stratum. The region is how those cells are grouped for a manager.</p>
+    </article>
+    <article class="panel" id="source">
+      <h3>Source</h3>
+      <p>Which record supplied the harmonized number.</p>
+      <ul>
+        <li><strong>modis_calibrated.</strong> MODIS, scaled by that month’s calibration ratio. This is how the years before VIIRS sit on the same chart.</li>
+        <li><strong>viirs_archive.</strong> Science-quality VIIRS. Once this record exists, the calendar uses it and does not apply the ratio.</li>
+        <li><strong>viirs_nrt.</strong> Near-real-time VIIRS. The month is still being revised, so the comparison can move when the science-quality product arrives.</li>
+      </ul>
+    </article>
+    <article class="panel" id="provisional">
+      <h3>Provisional</h3>
+      <p>The number can still change. Near-real-time detections are replaced by the science-quality product. A provisional month is a working figure for the current season, not a finished entry in the history.</p>
+    </article>
+    <article class="panel" id="month-still-open">
+      <h3>Month still open</h3>
+      <p>The month does not have every day yet, so it is not complete. Its total is unfinished and should not be lined up with a completed month. The same idea applies to a year: a missing month can make the year look quiet and pull its rank down. The year 2000 in the sample is short for this reason. It starts in July.</p>
+    </article>
+
+    <h2>A month against its own history</h2>
+    <article class="panel" id="usual-month">
+      <h3>Usual month</h3>
+      <p>The median of that calendar month across the years on file. Half of those years were busier, half quieter. September is compared with other Septembers, not with August and not with last year alone. That is how a manager sees whether this season is out of line for this place.</p>
+    </article>
+    <article class="panel" id="normal-range">
+      <h3>Normal range</h3>
+      <p>The middle half of past years for that month, from the 25th percentile to the 75th. Inside the band, the month looks ordinary for this region. Outside it, the month is quiet or busy relative to its own history. A large region and a small region each have their own band.</p>
+    </article>
+    <article class="panel" id="anomaly-ratio">
+      <h3>Compared with usual</h3>
+      <p>This period’s harmonized cell-days divided by the usual value for the same period. The period can be one month, the year so far, or a full year. Near 1, it looks ordinary. The calendar bins are fixed: under 0.5 is much below, under 0.8 is below, up to 1.2 is normal, up to 1.8 is above, and anything higher is much above. The same multiple means the same kind of departure in every region, which a raw total cannot say.</p>
+    </article>
+    <article class="panel" id="anomaly-diff">
+      <h3>Difference</h3>
+      <p>The same comparison in cell-days: this month minus the usual month. A ratio of 1.6 on a small month and on a large month is not the same operational load. The difference says how many cell-days that departure is.</p>
+    </article>
+    <article class="panel" id="anomaly-class">
+      <h3>Class</h3>
+      <p>The name of that bin: much below, below, normal, above, or much above. The calendar trusts the class stored with the month. It does not recompute the bin in the browser, and it does not recolor the cell when the printed number is switched to MODIS or VIIRS.</p>
+    </article>
+    <article class="panel" id="rank">
+      <h3>Rank</h3>
+      <p>Where this month sits among the same calendar month in the years on file. 1 is the busiest. A year has the same kind of rank for its annual total. The sample list is shorter than the full MODIS record, so a live rank will be out of a longer list. An unfinished year can rank low because months are missing.</p>
+    </article>
+    <article class="panel" id="percentile-rank">
+      <h3>Percentile</h3>
+      <p>The same ordering on a 0 to 100 scale. A percentile of 100 is the busiest month in the list. Rank and percentile answer the same question. Rank is easier to say, and percentile is easier to compare once the list of years gets long.</p>
+    </article>
+    <article class="panel" id="year-to-date">
+      <h3>Year to date</h3>
+      <p>Harmonized cell-days from January through the latest month in the headline. One hot month can sit inside an otherwise ordinary year, so the running total is the check. Year to date versus usual divides that running total by the usual total for those same months in past years.</p>
+    </article>
+
+    <h2>The shape of the year</h2>
+    <article class="panel" id="peak-month">
+      <h3>Peak month</h3>
+      <p>The month that contributed the most harmonized cell-days. The calendar is about when the season peaks, not only whether the year was high.</p>
+    </article>
+    <article class="panel" id="season">
+      <h3>Season</h3>
+      <p>When the year’s cell-days arrived. The start is the month when 10% of the year’s cell-days had accumulated, the midpoint is 50%, and the end is 90%. Season length is the number of months from start to end, inclusive. A season that starts early or runs long is a different kind of change than one hot month.</p>
+    </article>
+    <article class="panel" id="analog">
+      <h3>Analog</h3>
+      <p>A past year whose month-by-month pattern, from January through the current month, looks most like this year. It is a resemblance. It is not a forecast of how the rest of the season will go. The closest analog is the year named on the overview.</p>
+    </article>
+    <article class="panel" id="similarity">
+      <h3>Similarity</h3>
+      <p>A 0 to 100 reading of how close that past year’s shape is to this year, up to the current month. Higher means closer. It is a description of the match, not a probability.</p>
+    </article>
+    <article class="panel" id="rest-of-year">
+      <h3>Rest of the year</h3>
+      <p>What the analog year did after the current month: the cell-days still to come in that year, and that remainder divided by the usual remainder. Above 1 means that similar year finished busy. It is context for the resemblance, not a prediction for this year.</p>
+    </article>
+    <article class="panel" id="holdout-error">
+      <h3>Holdout error</h3>
+      <p>How far the calibration ratio was off on years it was not fit to, as a mean absolute percentage error. Smaller means the adjustment is more trustworthy. A ratio with a large holdout error is a weaker basis for comparing the MODIS years with the VIIRS years.</p>
+    </article>
+    <article class="panel" id="fit-window">
+      <h3>Fit window</h3>
+      <p>The overlap months the ratio was learned from, which VIIRS sensor was used, and which method version produced it. The ratio is only as good as that overlap. The year page prints the window next to the monthly ratios.</p>
+    </article>
+
+    <h2>Where the numbers come from</h2>
+    <article class="panel" id="region">
+      <h3>Region</h3>
+      <p>The management area the calendar is summed for. The sample has the Argentine Chaco and the Brazilian Cerrado. A region name is not stored on each grid cell. The map connects a region to its stratum and sums the cells in that stratum.</p>
+    </article>
+    <article class="panel" id="firms">
+      <h3>FIRMS</h3>
+      <p>NASA’s Fire Information for Resource Management System, the source of the MODIS and VIIRS active-fire detections this project harmonizes. The figures on the site today are sample numbers for the layout. They are not FIRMS detections, and the map circles are not observed burn scars. A banner on each page says which.</p>
+    </article>
+  </main>
+  <script src="nav.js"></script>
+</body>
+</html>

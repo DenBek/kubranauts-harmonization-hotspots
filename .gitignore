@@ -223,3 +223,7 @@ __marimo__/
 *.duckdb
 analysis.txt
 tmp/
+
+# Wrangler local state and local Pages secrets. Never commit these.
+.wrangler/
+.dev.vars

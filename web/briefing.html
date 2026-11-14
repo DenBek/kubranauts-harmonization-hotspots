@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Briefing · Burning activity</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main>
+    <p class="eyebrow">Field briefing</p>
+    <h1>Text a firefighter would receive</h1>
+    <p class="lede">This is the sentence a field user would get: the month, how it compares with the usual month, and its rank. For the headline month it uses the same sentence as the overview, so the text and the page do not disagree. Twilio is not connected, and nothing is sent.</p>
+    <p class="banner" id="data-banner" data-source="sample">Loading calendar…</p>
+
+    <form id="briefing-form" class="controls">
+      <label>Region
+        <select id="region" name="region"></select>
+      </label>
+      <label>Year
+        <select id="year" name="year"></select>
+      </label>
+      <label>Month
+        <select id="month" name="month"></select>
+      </label>
+      <button type="submit">Preview the text</button>
+    </form>
+
+    <section class="panel">
+      <h2>Message</h2>
+      <p class="sms" id="sms">Choose a country and month, then preview the text.</p>
+      <p class="muted" id="twilio-status"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Where a live send would be turned on</h2>
+      <p>Leave these unset for the demo. When you want a real text, add them on the Cloudflare Pages project under Settings, Environment variables, Production, then redeploy:</p>
+      <ul class="keys">
+        <li><code>TWILIO_ACCOUNT_SID</code></li>
+        <li><code>TWILIO_AUTH_TOKEN</code></li>
+        <li><code>TWILIO_FROM</code></li>
+        <li><code>TWILIO_LIVE</code> set to <code>true</code></li>
+      </ul>
+      <p class="muted">The function in <code>functions/api/notify.js</code> still does not call Twilio. The send has a marked spot in that file, and it stays off while <code>TWILIO_LIVE</code> is unset. Do not commit these values. They are Pages settings, separate from the Codespaces secrets.</p>
+    </section>
+  </main>
+  <script src="nav.js"></script>
+  <script src="gold.js"></script>
+  <script src="briefing.js"></script>
+</body>
+</html>
