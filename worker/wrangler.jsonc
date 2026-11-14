@@ -1,0 +1,14 @@
+{
+  // The Worker's name. It becomes part of its web address later.
+  "name": "firms-worker",
+  // The code file to run
+  "main": "src/index.js",
+  // Which version of Cloudflare's rules to follow
+  "compatibility_date": "2026-11-01",
+  // Your teammate's Cloudflare account
+  "account_id": "PASTE-ACCOUNT-ID-HERE",
+  // The binding: inside the code, DATA means the firms-data bucket
+  "r2_buckets": [
+    { "binding": "DATA", "bucket_name": "firms-data" }
+  ]
+}
