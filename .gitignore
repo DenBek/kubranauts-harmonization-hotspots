@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local working files
+*.duckdb
+analysis.txt
+tmp/
+tmp_backfill/
+tmp_silver/
