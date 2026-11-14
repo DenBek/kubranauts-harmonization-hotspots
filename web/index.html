@@ -3,46 +3,84 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Burning activity calendar</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Burning activity map</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="map-page">
   <header id="site-header"></header>
-  <main>
-    <p class="eyebrow">NASA Space Apps · Team Kubranauts</p>
-    <h1>A calendar of burning activity</h1>
-    <p class="lede">Pick a region and read the season against its own history. The figures are harmonized <a href="glossary.html#cell-day">cell-days</a>: a grid cell counted as burning on one day, after MODIS and VIIRS have been put on one scale. Raw hotspot counts from the two sensors are not comparable, which is why the calendar uses this unit. Every term is defined under <a href="glossary.html">Terms</a>.</p>
-    <p class="banner" id="data-banner" data-source="sample">Checking which dataset is loaded…</p>
+  <main id="main">
+    <div class="map-shell">
+      <div id="map" role="application" aria-label="Map of grid cells. The cell list in the side panel has the same cells for keyboard use."></div>
 
-    <label>Region
-      <select id="region"></select>
-    </label>
-    <section class="panel" id="headline">
-      <h2 id="headline-text">Loading the summary…</h2>
-      <p id="headline-alt" class="muted"></p>
-      <div class="stats" id="headline-stats"></div>
-    </section>
+      <aside class="map-panel" aria-label="Map controls and details">
+        <section>
+          <p class="eyebrow" id="eyebrow">Grid cells</p>
+          <h1>Where the cell-days are</h1>
+          <p class="small muted">Each circle is one <a href="glossary.html#grid-cell">grid cell</a> active in the month on the timeline. Bigger and hotter means more cell-days. Click a circle, or a row in the list, to read it.</p>
+          <p class="banner" id="data-banner" data-source="sample"></p>
+        </section>
 
-    <div class="actions">
-      <a class="card-link" id="link-map" href="map.html">Explore the map</a>
-      <a class="button secondary" id="link-calendar" href="calendar.html">Open the calendar</a>
-      <a class="button secondary" id="link-year" href="year.html">Year and analogs</a>
-      <a class="button secondary" id="link-briefing" href="briefing.html">Preview a text briefing</a>
+        <section>
+          <div class="field">Value on the map
+            <div id="metric" role="group" aria-label="Value on the map"></div>
+          </div>
+          <div id="month-total" style="margin-top:0.7rem"></div>
+        </section>
+
+        <section id="cell-detail" aria-live="polite">
+          <h2>Select a cell</h2>
+          <p class="small muted">Click a circle or a row below.</p>
+        </section>
+
+        <section aria-labelledby="area-title">
+          <div class="card-head" style="margin-bottom:0.4rem">
+            <h2 id="area-title">Area of interest</h2>
+          </div>
+          <p class="small muted">Drag a box on the map, use the current view, or type the corners. The totals and the CSV cover the cells whose centers fall inside.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.5rem 0">
+            <button type="button" class="btn small secondary" id="draw-area" aria-pressed="false"><span data-icon="area" data-size="16"></span>Draw a box</button>
+            <button type="button" class="btn small secondary" id="view-area"><span data-icon="target" data-size="16"></span>Use this view</button>
+            <button type="button" class="btn small ghost" id="clear-area" hidden><span data-icon="close" data-size="16"></span>Clear</button>
+          </div>
+          <form class="coords" id="coords-form">
+            <label class="field">South (lat)<input type="number" step="0.01" min="-90" max="90" name="south" required></label>
+            <label class="field">North (lat)<input type="number" step="0.01" min="-90" max="90" name="north" required></label>
+            <label class="field">West (lon)<input type="number" step="0.01" min="-180" max="180" name="west" required></label>
+            <label class="field">East (lon)<input type="number" step="0.01" min="-180" max="180" name="east" required></label>
+            <button type="submit" class="btn small secondary" style="grid-column:1/-1">Apply coordinates</button>
+          </form>
+          <div id="area-summary" style="margin-top:0.6rem" aria-live="polite"></div>
+        </section>
+
+        <section aria-labelledby="list-title">
+          <h2 id="list-title">Cells this month</h2>
+          <ul class="cell-list" id="cell-list"></ul>
+        </section>
+      </aside>
+
+      <div class="map-legend" id="map-legend" aria-label="Legend"></div>
+
+      <div class="timeline" role="group" aria-label="Timeline">
+        <div class="timeline-buttons">
+          <button type="button" class="btn icon secondary small" id="prev" aria-label="Previous month"><span data-icon="prev" data-size="16"></span></button>
+          <button type="button" class="btn icon small" id="play" aria-label="Play through the months"><span data-icon="play" data-size="16"></span></button>
+          <button type="button" class="btn icon secondary small" id="next" aria-label="Next month"><span data-icon="next" data-size="16"></span></button>
+        </div>
+        <div class="timeline-track">
+          <div class="timeline-bars" id="timeline-bars" aria-hidden="true"></div>
+          <input type="range" id="slider" min="0" max="0" value="0" aria-label="Month">
+        </div>
+        <div class="timeline-label" id="timeline-label"><strong>—</strong><span></span></div>
+      </div>
     </div>
-
-    <section class="panel">
-      <h2>Sample numbers, for now</h2>
-      <p>The pages read illustrative cell-days so the layout can be tried before the gold tables are in the bucket. The banner says so. These figures are not FIRMS detections, and the map dots are not observed burn scars.</p>
-      <h2>When a gold table is ready</h2>
-      <ol class="steps">
-        <li>Write the Parquet to <code>gold/&lt;table&gt;.parquet</code> in the <code>firms-data</code> bucket. The six names are listed in <code>WEB_DEPLOYMENT.md</code>.</li>
-        <li>In the Codespace, run <code>python scripts/export_calendar.py</code>. It writes <code>publish/&lt;table&gt;.json</code> for each file it finds.</li>
-        <li>Reload this site. A table that was exported leaves the sample. The others stay on the sample, and each banner says which.</li>
-      </ol>
-    </section>
   </main>
-  <script src="nav.js"></script>
   <script src="gold.js"></script>
-  <script src="overview.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="map.js"></script>
 </body>
 </html>

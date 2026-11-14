@@ -3,49 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Calendar · Burning activity</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Calendar</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header id="site-header"></header>
-  <main>
-    <p class="eyebrow">Region months</p>
-    <h1>Burning activity calendar</h1>
-    <p class="lede">Each cell is one month. The color is how that month compares with the same month in other years, not how large the number is on its own. A dark ember September means an unusually active September for this region.</p>
-    <p class="banner" id="data-banner" data-source="sample">Loading calendar…</p>
-    <div class="controls">
-      <label>Region
-        <select id="region"></select>
-      </label>
-      <label>Number in the cell
-        <select id="metric">
-          <option value="harmonized">Harmonized cell-days</option>
-          <option value="modis">MODIS cell-days</option>
-          <option value="viirs">VIIRS cell-days</option>
-        </select>
-      </label>
-      <button type="button" id="csv" class="secondary">Download CSV</button>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow" id="eyebrow">Region months</p>
+      <h1>Burning activity calendar</h1>
+      <p class="lede">Each square is one month. Its color is how that month compares with the same month in other years, not how large the number is on its own. A dark ember September means an unusually active September for this region. Click a square, or use the arrow keys, to read it.</p>
+      <p class="banner" id="data-banner" data-source="sample"></p>
     </div>
-    <section class="panel" id="detail">
-      <h2>Select a month</h2>
-    </section>
-    <div class="scroll">
-      <table id="calendar">
-        <thead>
-          <tr>
-            <th class="year">Year</th>
-            <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
-            <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+
+    <div class="toolbar">
+      <span class="toolbar-label">Number in each square</span>
+      <div id="metric" role="group" aria-label="Number in each square"></div>
+      <label class="switch"><input type="checkbox" id="show-values" checked><span class="track"></span>Show numbers</label>
+      <span class="spacer"></span>
+      <button type="button" class="btn secondary small" id="csv"><span data-icon="download" data-size="16"></span>Download CSV</button>
     </div>
-    <p class="muted">The five colors are fixed bins, so the same color means the same kind of departure in every region. Switching the number between harmonized, MODIS, and VIIRS does not recolor the cell. That toggle is there to show the seam: the two sensors do not count fires the same way, and VIIRS is empty before April 2018.</p>
-    <p class="legend" id="legend"></p>
+
+    <div class="grid split">
+      <section class="card" aria-label="Calendar">
+        <div class="heatmap-wrap">
+          <div class="heatmap" id="heatmap" aria-label="Months by year. Arrow keys move between months."></div>
+        </div>
+        <div class="heatmap-foot">
+          <div id="legend"></div>
+          <span class="key-provisional"><i></i><a href="glossary.html#provisional">Provisional or still open</a></span>
+          <span class="key-seam"><i></i><a href="glossary.html#seam">VIIRS record starts</a></span>
+        </div>
+        <p class="small muted" style="margin-top:0.8rem">The five colors are fixed bins, so the same color means the same kind of departure in every region. Switching the number between harmonized, MODIS, and VIIRS does not recolor the squares. That switch shows the <a href="glossary.html#seam">seam</a>: the two sensors do not count fires the same way, and VIIRS is empty before April 2018.</p>
+      </section>
+
+      <aside class="card sticky" id="detail" aria-live="polite">
+        <h2>Select a month</h2>
+      </aside>
+    </div>
+
+    <div class="grid two" style="margin-top:1rem">
+      <section class="card" aria-labelledby="across-title">
+        <div class="card-head">
+          <div>
+            <h2 id="across-title">This month across the years</h2>
+            <p class="card-sub" id="across-sub">The same calendar month in every year on file. Click a bar to jump to that year.</p>
+          </div>
+          <button type="button" class="btn small secondary" id="across-table-btn"></button>
+        </div>
+        <div class="chart" id="across-chart"></div>
+        <div id="across-table" hidden></div>
+      </section>
+
+      <section class="card" aria-labelledby="sensors-title">
+        <div class="card-head">
+          <div>
+            <h2 id="sensors-title"><a href="glossary.html#harmonization">The year by sensor</a></h2>
+            <p class="card-sub" id="sensors-sub">Harmonized cell-days next to the two raw sensor counts. Click a month to select it.</p>
+          </div>
+          <button type="button" class="btn small secondary" id="sensors-table-btn"></button>
+        </div>
+        <div class="chart" id="sensors-chart"></div>
+        <div id="sensors-table" hidden></div>
+        <div id="sensors-legend" style="margin-top:0.7rem"></div>
+      </section>
+    </div>
   </main>
-  <script src="nav.js"></script>
   <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
   <script src="calendar.js"></script>
 </body>
 </html>
