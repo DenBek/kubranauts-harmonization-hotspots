@@ -1,0 +1,5 @@
+E1 2020-22 M1     bias   -7.2%  rmse_log 0.135  mdape 9.5%
+E1 2020-22 M1-DN  bias   -8.0%  rmse_log 0.142  mdape 6.5%
+E2 2023-25 M1     bias   -0.7%  rmse_log 0.146  mdape 9.2%
+E2 2023-25 M1-DN  bias   -2.2%  rmse_log 0.151  mdape 9.3%
+night factor by month: {1: 15.6, 2: 16.8, 3: 23.5, 4: 23.4, 5: 46.3, 6: 33.6, 7: 25.5, 8: 22.1, 9: 21.6, 10: 17.9, 11: 19.0, 12: 13.2}

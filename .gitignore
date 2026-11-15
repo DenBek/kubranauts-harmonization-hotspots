@@ -232,3 +232,6 @@ tmp_silver/
 
 # Jack
 .claude/
+
+# DuckDB spill dir (notebooks)
+tmp_ml/
