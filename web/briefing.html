@@ -14,7 +14,7 @@
     <div class="page-head">
       <p class="eyebrow" id="eyebrow">Field briefing</p>
       <h1>The text a firefighter would receive</h1>
-      <p class="lede">Pick a month and the phone shows the sentence a field user would get: the month, how it compares with the usual month, and its rank. For the headline month it uses the same sentence as the overview, so the text and the site never disagree. Twilio is not connected, and nothing is sent.</p>
+      <p class="lede">Pick a month and the phone shows the sentence a field user would get: the month, how it compares with the usual month, and its rank. For the headline month it uses the same sentence as the overview, so the text and the site never disagree. This page only previews; to send a real text or call, use <a href="index.html">Send this briefing to a phone</a> on the map.</p>
       <p class="banner" id="data-banner" data-source="sample"></p>
     </div>
 
@@ -58,15 +58,16 @@
     </div>
 
     <details class="note">
-      <summary>Where a live send would be turned on</summary>
-      <p>Leave these unset for the demo. When you want a real text, add them on the Cloudflare Pages project under Settings, Environment variables, Production, then redeploy:</p>
+      <summary>Where a live send is turned on</summary>
+      <p>Add these as secrets on the Cloudflare Pages project (Settings, Variables and Secrets) on Production and Preview, then redeploy:</p>
       <ul class="keys">
         <li><code>TWILIO_ACCOUNT_SID</code></li>
         <li><code>TWILIO_AUTH_TOKEN</code></li>
         <li><code>TWILIO_FROM</code></li>
+        <li><code>TWILIO_RECIPIENTS</code> as <code>Name=+1…,Name=+1…</code></li>
         <li><code>TWILIO_LIVE</code> set to <code>true</code></li>
       </ul>
-      <p class="muted">The function in <code>functions/api/notify.js</code> still does not call Twilio. The send has a marked spot in that file, and it stays off while <code>TWILIO_LIVE</code> is unset. Do not commit these values. They are Pages settings, separate from the Codespaces secrets.</p>
+      <p class="muted">The map's <em>Send this briefing to a phone</em> box sends through <code>functions/api/notify.js</code>, only to the names in <code>TWILIO_RECIPIENTS</code>. This page's preview never sends. Do not commit these values. They are Pages settings, separate from the Codespaces secrets.</p>
     </details>
   </main>
   <script src="gold.js"></script>

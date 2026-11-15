@@ -103,6 +103,18 @@
         <div id="cal-key"></div>
         <div class="drawer-detail detail-card" id="detail" aria-live="polite"></div>
 
+        <!-- Twilio: send the headline above to a phone (functions/api/notify.js). Phone numbers live in Pages secrets. -->
+        <details class="send-card" id="send-card">
+          <summary><span data-icon="send" data-size="16"></span>Send this briefing to a phone</summary>
+          <p class="sms-bubble" id="send-preview"></p>
+          <div class="send-row">
+            <label class="field">To<select id="send-to" aria-label="Send to"></select></label>
+            <div id="send-channel" role="group" aria-label="How to send"></div>
+          </div>
+          <button type="button" class="btn small" id="send-go"><span data-icon="send" data-size="16"></span>Send</button>
+          <p class="small muted" id="send-status" aria-live="polite"></p>
+        </details>
+
         <div id="explore-side">
           <section class="side-section" id="cell-detail" aria-live="polite"></section>
           <section class="side-section" aria-labelledby="list-title">
