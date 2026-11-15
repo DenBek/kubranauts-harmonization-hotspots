@@ -1,0 +1,5 @@
+data/extract/
+data/*.duckdb
+data/global_daily.parquet
+gold/publish/
+data/14_build_gold_stdout.txt

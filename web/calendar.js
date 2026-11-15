@@ -19,10 +19,10 @@ var METRICS = [
   { value: "viirs", label: "VIIRS" },
 ];
 var METRIC_FIELD = { harmonized: "harmonized_cell_days", modis: "modis_cell_days", viirs: "viirs_cell_days" };
-var METRIC_LABEL = { harmonized: "Harmonized cell-days", modis: "MODIS cell-days", viirs: "VIIRS cell-days" };
-var METRIC_TERM = { harmonized: "harmonized-cell-days", modis: "modis", viirs: "viirs" };
+var METRIC_LABEL = { harmonized: "Harmonized detections", modis: "MODIS detections", viirs: "VIIRS detections" };
+var METRIC_TERM = { harmonized: "harmonized-detections", modis: "modis", viirs: "viirs" };
 var METRIC_HELP = {
-  harmonized: "The comparable figure. A cell-day is one grid cell detected as active on one day, after MODIS and VIIRS are on the same scale. This is the number the calendar uses for history.",
+  harmonized: "The comparable figure. The number of fire detections, after MODIS and VIIRS are put on the same scale (VIIRS-equivalent). This is the number the calendar uses for history.",
   modis: "Activity counted from MODIS only. The long record, but a coarser and less sensitive sensor than VIIRS, so this number is not the one to compare across the whole time series.",
   viirs: "Activity counted from VIIRS only. Empty before April 2018, because that sensor was not observing yet. It usually runs higher than MODIS for the same fires, which is why a calibration ratio exists.",
 };
@@ -161,7 +161,7 @@ function heatCell(row, current, firstViirs) {
     "data-year": row.year,
     "data-month": row.month,
     "aria-pressed": String(!!selected),
-    "aria-label": monthLabel(row.year, row.month) + ", " + (CLASS_LABEL[row.anomaly_class] || "unknown") + " usual, " +
+    "aria-label": monthLabel(row.year, row.month) + ", " + (CLASS_LABEL[row.anomaly_class] ? CLASS_LABEL[row.anomaly_class] + " usual" : "provisional, not compared yet") + ", " +
       (isMissing(v) ? "no " + METRIC_LABEL[state.metric] : formatNumber(v) + " " + METRIC_LABEL[state.metric]),
     style: "background:" + fill + ";color:" + textOn(fill),
   }, [el("span", { text: isMissing(v) ? "·" : formatCompact(v) })]);
@@ -171,9 +171,9 @@ function heatCell(row, current, firstViirs) {
       { label: METRIC_LABEL[state.metric], value: isMissing(v) ? "no value" : formatNumber(v), color: fill, kind: "box" },
       { label: "Usual " + MONTHS[row.month - 1], value: formatNumber(row.baseline_median) },
       { label: "Compared with usual", value: formatRatio(row.anomaly_ratio) },
-      { label: "Rank", value: row.rank_in_month + " of " + row.n_years_ranked },
+      { label: "Rank", value: (isMissing(row.rank_in_month) ? "not ranked yet" : row.rank_in_month + " of " + row.n_years_ranked) },
     ];
-    var note = CLASS_LABEL[row.anomaly_class] + " usual";
+    var note = CLASS_LABEL[row.anomaly_class] ? CLASS_LABEL[row.anomaly_class] + " usual" : "Provisional, not compared yet";
     if (row.is_provisional) note += " · provisional";
     if (!row.is_complete) note += " · month still open";
     return { title: monthLabel(row.year, row.month), rows: rowsOut, note: note };
@@ -246,14 +246,14 @@ function renderDetail(row) {
   panel.appendChild(badges);
 
   var big = el("div", { class: "kpi-value", style: "margin-top:0.6rem", text: isMissing(v) ? "No value" : formatNumber(v) });
-  big.appendChild(el("span", { class: "unit", text: METRIC_LABEL[state.metric].replace(" cell-days", "") + " cell-days" }));
+  big.appendChild(el("span", { class: "unit", text: METRIC_LABEL[state.metric].replace(" detections", "") + " detections" }));
   panel.appendChild(big);
   if (isMissing(v) && state.metric === "viirs") panel.appendChild(el("p", { class: "small muted", text: "VIIRS was not observing yet in this month." }));
 
   var bulletHost = el("div");
   panel.appendChild(bulletHost);
   bullet(bulletHost, { lo: row.baseline_p25, hi: row.baseline_p75, median: row.baseline_median, value: row.harmonized_cell_days, color: classColor(row.anomaly_class) });
-  panel.appendChild(el("p", { class: "small muted", text: "Dot: harmonized cell-days. Band: the middle half of past " + monthName + "s. Line: the usual " + monthName + "." }));
+  panel.appendChild(el("p", { class: "small muted", text: "Dot: harmonized detections. Band: the middle half of past " + monthName + "s. Line: the usual " + monthName + "." }));
 
   var toggle = el("label", { class: "switch", style: "margin-top:0.5rem" }, [
     el("input", { type: "checkbox" }),
@@ -264,17 +264,17 @@ function renderDetail(row) {
   checkbox.checked = state.explain;
   panel.appendChild(toggle);
 
-  var ratioText = row.anomaly_ratio === null ? "No ratio" : formatRatio(row.anomaly_ratio);
+  var ratioText = isMissing(row.anomaly_ratio) ? "Not compared yet" : formatRatio(row.anomaly_ratio);
   var dl = el("dl", { class: "metric" + (state.explain ? "" : " compact") });
   dl.innerHTML =
     metricItem(term(METRIC_TERM[state.metric], METRIC_LABEL[state.metric]), isMissing(v) ? "No value" : formatNumber(v), METRIC_HELP[state.metric]) +
     metricItem(term("usual-month", "Usual " + monthName), formatNumber(row.baseline_median), "The median of this calendar month across the years on file. Half of past years were busier, half quieter. Comparing against this, rather than against last year alone, is how a manager sees whether the season is unusual.") +
     metricItem(term("normal-range", "Normal range"), formatCompact(row.baseline_p25) + " – " + formatCompact(row.baseline_p75), "The middle half of past years for this month. Inside the band the month looks ordinary. Outside it, the month is quiet or busy relative to its own history.") +
-    metricItem(term("anomaly-ratio", "Compared with usual"), ratioText, "This month divided by the usual month. The " + term("anomaly-diff", "difference") + " is " + (row.anomaly_diff > 0 ? "+" : "") + formatNumber(row.anomaly_diff) + " cell-days.") +
-    metricItem(term("rank", "Rank"), row.rank_in_month + " of " + row.n_years_ranked, "1 is the busiest year for this month. " + term("percentile-rank", "Percentile") + " " + row.percentile_rank + " places it on a 0 to 100 scale among those years.") +
+    metricItem(term("anomaly-ratio", "Compared with usual"), ratioText, "This month divided by the usual month. The " + term("anomaly-diff", "difference") + " is " + (row.anomaly_diff > 0 ? "+" : "") + formatNumber(row.anomaly_diff) + " detections.") +
+    metricItem(term("rank", "Rank"), (isMissing(row.rank_in_month) ? "not ranked yet" : row.rank_in_month + " of " + row.n_years_ranked), "1 is the busiest year for this month. " + term("percentile-rank", "Percentile") + " " + row.percentile_rank + " places it on a 0 to 100 scale among those years.") +
     metricItem(term("source", "Source"), sourceLabel(row.source), sourceHelp(row.source)) +
-    metricItem(term("modis", "MODIS"), formatNumber(row.modis_cell_days), "Raw MODIS cell-days, before harmonization.") +
-    metricItem(term("viirs", "VIIRS"), formatNumber(row.viirs_cell_days), "Raw VIIRS cell-days. Empty before April 2018.");
+    metricItem(term("modis", "MODIS"), formatNumber(row.modis_cell_days), "Raw MODIS detections, before harmonization.") +
+    metricItem(term("viirs", "VIIRS"), formatNumber(row.viirs_cell_days), "Raw VIIRS detections. Empty before April 2018.");
   panel.appendChild(dl);
   checkbox.addEventListener("change", function () {
     state.explain = checkbox.checked;
@@ -283,7 +283,7 @@ function renderDetail(row) {
 
   var q = "?region=" + encodeURIComponent(row.region_id) + "&year=" + row.year + "&month=" + row.month;
   panel.appendChild(el("div", { class: "hero-actions" }, [
-    el("a", { class: "btn small secondary", href: "index.html" + q, html: icon("map", 16) + "Show on the map" }),
+    el("a", { class: "btn small secondary", href: "map-old.html" + q, html: icon("map", 16) + "Show on the map" }),
     el("a", { class: "btn small secondary", href: "briefing.html" + q, html: icon("send", 16) + "Text briefing" }),
   ]));
 }
@@ -318,8 +318,8 @@ function renderAcross(mine, current) {
         title: d.title,
         rows: [
           { label: METRIC_LABEL[state.metric], value: isMissing(d.value) ? "no value" : formatNumber(d.value), color: cssVar(state.metric === "modis" ? "--s-modis" : state.metric === "viirs" ? "--s-viirs" : "--s-harm"), kind: "box" },
-          { label: "Class", value: CLASS_LABEL[d.row.anomaly_class] },
-          { label: "Rank", value: d.row.rank_in_month + " of " + d.row.n_years_ranked },
+          { label: "Class", value: CLASS_LABEL[d.row.anomaly_class] || "Provisional, not compared yet" },
+          { label: "Rank", value: (isMissing(d.row.rank_in_month) ? "not ranked yet" : d.row.rank_in_month + " of " + d.row.n_years_ranked) },
         ],
         note: d.partial ? "Hatched: provisional or still open" : "Click to select",
       };
@@ -328,7 +328,7 @@ function renderAcross(mine, current) {
   });
   resetTable("across-table-btn", "across-chart", "across-table", function () {
     return buildTable(["Year", METRIC_LABEL[state.metric], "Class", "Rank"], same.map(function (row) {
-      return [row.year, formatNumber(value(row)), CLASS_LABEL[row.anomaly_class], row.rank_in_month + " of " + row.n_years_ranked];
+      return [row.year, formatNumber(value(row)), (CLASS_LABEL[row.anomaly_class] || "Provisional, not compared yet"), (isMissing(row.rank_in_month) ? "not ranked yet" : row.rank_in_month + " of " + row.n_years_ranked)];
     }));
   });
 }
@@ -365,7 +365,7 @@ function renderSensors(mine, current) {
     series: series,
     selectedIndex: current.month - 1,
     height: 230,
-    ariaLabel: "Cell-days by sensor in " + year,
+    ariaLabel: "Detections by sensor in " + year,
     onPick: function (i) {
       if (find(mine, year, i + 1)) select(year, i + 1, false);
     },

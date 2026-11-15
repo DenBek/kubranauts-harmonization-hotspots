@@ -1,17 +1,18 @@
-// Site header: brand, page links, the shared region picker, the data-source
-// pill, and the light/dark toggle. Load after gold.js.
+// Site header: brand, page links, the data-source pill, and the light/dark
+// toggle. Load after gold.js.
 //
 // A new page needs one entry in PAGES below.
 
 (function () {
-  // "index" is the home page, which is the map.
   var PAGES = [
-    ["index", "Map"],
-    ["overview", "Overview"],
-    ["calendar", "Calendar"],
-    ["year", "Year"],
-    ["briefing", "Briefing"],
-    ["glossary", "Terms"],
+    ["problem", "The problem"],
+    ["regions", "Fire calendar"],
+    ["draw", "Draw an area"],
+    ["accuracy", "How accurate is it?"],
+    ["glossary", "Words used"],
+    // The old Map page lives at map-old.html (no nav entry): converted and measured months look the same there.
+    // Hidden from the nav (still in the repo): overview, year and briefing depend on the analogs table, which the
+    // Argentina MVP does not produce, or on SMS preview copy. See harmonization/argentina/SCOPE_AND_GAPS.md.
   ];
   var THEME_KEY = "fire-calendar-theme";
 
@@ -24,13 +25,12 @@
   header.innerHTML =
     "<a class='skip-link' href='#main'>Skip to content</a>" +
     "<div class='bar'>" +
-    "  <a class='brand' href='index.html'>" +
+    "  <a class='brand' href='problem.html'>" +
     "    <span class='brand-mark'>" + icon("flame", 18) + "</span>" +
     "    <span class='brand-text'>Fire Calendar<small>Team Kubranauts · NASA Space Apps</small></span>" +
     "  </a>" +
     "  <nav class='nav' id='site-nav' aria-label='Pages'></nav>" +
     "  <div class='bar-tools'>" +
-    "    <label class='region-picker'><span>Region</span><select id='global-region' aria-label='Region'></select></label>" +
     "    <span class='source-pill' id='source-pill' data-source='sample' tabindex='0' title='Which dataset the pages are reading'><span class='dot'></span><span class='pill-text'>Loading</span></span>" +
     "    <button type='button' class='btn ghost icon' id='theme-toggle'></button>" +
     "    <button type='button' class='btn ghost icon menu-button' id='menu-toggle' aria-expanded='false' aria-controls='site-nav' aria-label='Menu'>" + icon("menu", 20) + "</button>" +
@@ -47,21 +47,7 @@
     nav.appendChild(link);
   });
 
-  function syncLinks(region) {
-    nav.querySelectorAll("a").forEach(function (link) {
-      if (link.dataset.page === "glossary") return;
-      link.href = link.dataset.page + ".html?region=" + encodeURIComponent(region);
-    });
-  }
-
-  var select = document.getElementById("global-region");
-  fillRegionSelect(select, currentRegion());
-  syncLinks(currentRegion());
-  select.addEventListener("change", function () { setRegion(select.value); });
-  onRegionChange(function (region) {
-    select.value = region;
-    syncLinks(region);
-  });
+  // No header region picker: only the Fire calendar page has regions, and it has its own buttons. Nav links carry no ?region=.
 
   var menu = document.getElementById("menu-toggle");
   menu.addEventListener("click", function () {

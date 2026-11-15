@@ -17,10 +17,10 @@
         <span id="hero-chip"></span>
       </div>
       <h1 id="headline-text">Loading the summary…</h1>
-      <p class="alt" id="headline-alt">The figures are harmonized <a href="glossary.html#cell-day">cell-days</a>: a grid cell counted as burning on one day, after MODIS and VIIRS have been put on one scale.</p>
+      <p class="alt" id="headline-alt">The figures are harmonized <a href="glossary.html#cell-day">detections</a>: a grid cell counted as burning on one day, after MODIS and VIIRS have been put on one scale.</p>
       <div class="hero-actions">
         <a class="btn" id="link-calendar" href="calendar.html"><span data-icon="calendar"></span>Open the calendar</a>
-        <a class="btn secondary" id="link-map" href="index.html"><span data-icon="map"></span>Explore the map</a>
+        <a class="btn secondary" id="link-map" href="map-old.html"><span data-icon="map"></span>Explore the map</a>
         <a class="btn ghost" id="link-year" href="year.html"><span data-icon="chart"></span>Year and analogs</a>
         <a class="btn ghost" id="link-briefing" href="briefing.html"><span data-icon="send"></span>Text briefing</a>
       </div>
@@ -65,7 +65,7 @@
 
     <details class="note">
       <summary>Sample numbers, for now — and how live data replaces them</summary>
-      <p>The pages read illustrative cell-days so the layout can be tried before the gold tables are in the bucket. The banner and the pill in the header say so. These figures are not FIRMS detections, and the map dots are not observed burn scars.</p>
+      <p>The pages read illustrative detections so the layout can be tried before the gold tables are in the bucket. The banner and the pill in the header say so. These figures are not FIRMS detections, and the map dots are not observed burn scars.</p>
       <ol>
         <li>Write the Parquet to <code>gold/&lt;table&gt;.parquet</code> in the <code>firms-data</code> bucket. The six names are listed in <code>WEB_DEPLOYMENT.md</code>.</li>
         <li>In the Codespace, run <code>python scripts/export_calendar.py</code>. It writes <code>publish/&lt;table&gt;.json</code> for each file it finds.</li>

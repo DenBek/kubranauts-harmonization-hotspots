@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · How accurate is this?</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow">Tested on years the method had never seen</p>
+      <h1>How accurate is this?</h1>
+      <p class="lede">Before 2012 we convert the older MODIS camera to the scale of the newer VIIRS camera. To test the conversion we fitted it on 2012 to 2019, then converted 2020 to 2022 and compared the result with what VIIRS actually measured.</p>
+      <p class="banner" id="data-banner" data-source="offline"></p>
+    </div>
+
+    <div class="stat-row" id="stats"></div>
+
+    <div class="grid two" style="margin-top:1rem">
+      <section class="card img-card" aria-labelledby="val-title">
+        <h2 id="val-title">Converted against measured</h2>
+        <p class="card-sub">Argentina, monthly detections. Fitted on 2012 to 2019, tested on 2020 to 2022.</p>
+        <img src="img/pitch_3_validation.png" alt="Left: converted MODIS counts plotted against measured VIIRS counts for each month, close to the 1:1 line with a grey band for the likely range. Right: the 2020 to 2022 monthly series, measured VIIRS and converted MODIS, closely following each other.">
+        <p class="caption"><strong>What to notice:</strong> the dark points (months the method never saw) sit close to the 1:1 line and mostly inside the grey band. The conversion runs a little low, about 7% on average.</p>
+      </section>
+
+      <section class="card" aria-labelledby="rel-title">
+        <h2 id="rel-title">Small areas are less reliable</h2>
+        <p class="card-sub">Applies to converted months only (before 2012). Months measured by VIIRS are reliable at any size.</p>
+        <div style="overflow-x:auto">
+          <table class="rel-table" id="rel-table">
+            <thead><tr><th scope="col">MODIS detections in the area and month</th><th scope="col">Likely range</th><th scope="col">Flag</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="caption"><strong>What to notice:</strong> the bars get much longer as the area gets smaller. Below about 50 MODIS detections the converted value is only a rough indication.</p>
+      </section>
+    </div>
+
+    <div class="three-boxes" style="margin-top:1rem">
+      <section class="card">
+        <h2>How to read the flags</h2>
+        <ul id="flag-help"></ul>
+      </section>
+      <section class="card">
+        <h2>Where it works best</h2>
+        <ul>
+          <li>Whole country, or a large region, any month.</li>
+          <li>Every month from February 2012: these are measured by VIIRS, not converted.</li>
+          <li>Busy months and busy seasons, when there are plenty of detections.</li>
+          <li>Telling a very busy or very quiet month from a normal one.</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>Where it does not work</h2>
+        <ul>
+          <li>Small areas before 2012 (under about 50 MODIS detections in the month).</li>
+          <li>Quiet months, when MODIS may have seen nothing at all.</li>
+          <li>MODIS after 2022: its satellites drift to different overpass times, so we use VIIRS only.</li>
+          <li>Provisional months (latest few): near-real-time data can change, so they get no comparison.</li>
+          <li>Anywhere other than Argentina: not tested.</li>
+        </ul>
+      </section>
+    </div>
+
+    <p class="doc-links"><span id="doc-approach"></span><span id="doc-scope"></span><a href="problem.html">The problem we are solving</a><a href="regions.html">Explore the regions</a></p>
+  </main>
+  <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="mvp.js"></script>
+  <script src="accuracy.js"></script>
+</body>
+</html>

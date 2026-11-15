@@ -19,6 +19,8 @@ var TABLES = [
   "gold_region_analogs",
   "gold_region_headline",
   "gold_calibration",
+  "gold_reliability",
+  "gold_accuracy",
 ];
 
 function json(data, status) {

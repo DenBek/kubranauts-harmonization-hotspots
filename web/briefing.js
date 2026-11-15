@@ -115,7 +115,7 @@ function renderFacts() {
   host.appendChild(head);
   var dl = el("dl", { class: "metric compact" });
   dl.innerHTML =
-    metricItem(term("harmonized-cell-days", "Cell-days"), formatNumber(row.harmonized_cell_days)) +
+    metricItem(term("harmonized-detections", "Detections"), formatNumber(row.harmonized_cell_days)) +
     metricItem(term("anomaly-ratio", "Compared with usual"), formatRatio(row.anomaly_ratio)) +
     metricItem(term("rank", "Rank"), row.rank_in_month + " of " + row.n_years_ranked);
   host.appendChild(dl);

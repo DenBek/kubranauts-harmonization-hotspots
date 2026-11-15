@@ -9,8 +9,12 @@ var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "A
 var MONTHS_SHORT = MONTHS.map(function (name) { return name.slice(0, 3); });
 
 var REGIONS = [
-  { id: "argentina_chaco", name: "Argentine Chaco", stratum: "chaco", country: "Argentina" },
-  { id: "brazil_cerrado", name: "Brazilian Cerrado", stratum: "cerrado", country: "Brazil" },
+  { id: "argentina", name: "Argentina (whole country)", stratum: "argentina", country: "Argentina" },
+  { id: "ar_ne", name: "North-east (Corrientes, Misiones, Entre Ríos)", stratum: "argentina", country: "Argentina" },
+  { id: "ar_nw", name: "North-west and western Chaco (Salta, Tucumán, Santiago del Estero)", stratum: "argentina", country: "Argentina" },
+  { id: "ar_c", name: "Centre (Córdoba, Pampas, La Pampa)", stratum: "argentina", country: "Argentina" },
+  { id: "ar_s", name: "Patagonia (south of 39°S)", stratum: "argentina", country: "Argentina" },
+  { id: "ar_delta", name: "Paraná Delta (box)", stratum: "argentina", country: "Argentina" },
 ];
 
 // ---------- anomaly classes ----------
@@ -178,7 +182,7 @@ function isMissing(value) {
 }
 
 function formatNumber(value) {
-  if (isMissing(value)) return "none";
+  if (isMissing(value)) return "not included";
   return Math.round(Number(value)).toLocaleString("en-US");
 }
 
@@ -193,7 +197,13 @@ function formatCompact(value) {
 
 function formatRatio(value) {
   if (isMissing(value)) return "–";
-  return (Math.round(Number(value) * 100) / 100).toFixed(2) + "×";
+  if (Number(value) > 10) return "more than 10×";   // the exact ratio stays in the CSV downloads
+  var v = Number(value);
+  var r = Math.round(v * 100) / 100;
+  // A ratio a hair either side of a colour boundary (0.5, 0.8, 1.2, 1.8) must not read as exactly on it,
+  // or "0.50×" would sit next to "Much below".
+  if (r !== v && [0.5, 0.8, 1.2, 1.8].indexOf(r) > -1) return (v < r ? "just under " : "just over ") + r.toFixed(2) + "×";
+  return r.toFixed(2) + "×";
 }
 
 function monthLabel(year, month) {
@@ -294,7 +304,7 @@ function statusChip(className) {
   var fill = classColor(className);
   var chip = el("span", { class: "status-chip", style: "background:" + fill + ";color:" + textOn(fill) });
   chip.innerHTML = icon(CLASS_ICON[className] || "minus", 14);
-  chip.appendChild(document.createTextNode(className === "normal" ? "Normal" : (CLASS_LABEL[className] || "Unknown") + " usual"));
+  chip.appendChild(document.createTextNode(className === "normal" ? "Normal" : (CLASS_LABEL[className] ? CLASS_LABEL[className] + " usual" : "Provisional, not compared yet")));
   return chip;
 }
 

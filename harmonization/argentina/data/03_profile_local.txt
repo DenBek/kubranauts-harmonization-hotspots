@@ -1,0 +1,222 @@
+== country vs bbox, by satellite ==
+   satellite        n      both_  country_only  bbox_only
+0       Aqua  1884996  1081033.0           0.0   803963.0
+1    NOAA-20  3252115  1827488.0           0.0  1424627.0
+2  Suomi NPP  5214258  2889092.0           0.0  2325166.0
+3      Terra  1149084   656291.0           0.0   492793.0 
+
+== Argentina rows outside bbox: where are they ==
+Empty DataFrame
+Columns: [satellite, lat, lon, n]
+Index: [] 
+
+== country_source for Argentina rows ==
+    satellite quality country_source        n
+0        Aqua     NRT   lookup_01deg     7796
+1        Aqua     NRT    lookup_1deg        9
+2        Aqua      SP           file  1063704
+3        Aqua      SP   lookup_01deg     9141
+4        Aqua      SP    lookup_1deg      383
+5     NOAA-20     NRT   lookup_01deg    46669
+6     NOAA-20     NRT    lookup_1deg      203
+7     NOAA-20      SP           file  1728797
+8     NOAA-20      SP   lookup_01deg    47999
+9     NOAA-20      SP    lookup_1deg     3820
+10  Suomi NPP      SP           file  2889092
+11      Terra     NRT   lookup_01deg     3348
+12      Terra     NRT    lookup_1deg       22
+13      Terra      SP           file   648712
+14      Terra      SP   lookup_01deg     3831
+15      Terra      SP    lookup_1deg      378 
+
+== countries inside bbox ==
+            country        n
+0         Argentina  6453904
+1          Paraguay  3604839
+2             Chile   843639
+3            Brazil   399181
+4           Uruguay   100181
+5           Bolivia    96296
+6  Falkland_Islands     2413 
+
+== 0.1deg cells shared between Argentina and another country (border ambiguity) ==
+   arg_cells  mixed_cells  det_in_mixed
+0      21886          384      285222.0 
+
+== nulls per column (Argentina) ==
+   satellite        n  instrument  quality  acq_datetime_utc  acq_date_utc  local_date  latitude  longitude  lat10  lon10  country  country_source  daynight  confidence_class  confidence_raw  frp  bright_main  bright_aux  scan  track  type_reported  type_final  type_inferred  is_vegetation_fire  version  source  year  source_1  year_1  in_country  in_bbox
+0      Terra   656291         0.0      0.0               0.0           0.0         0.0       0.0        0.0    0.0    0.0      0.0             0.0       0.0               0.0             0.0  0.0          0.0         0.0   0.0    0.0           0.51         0.0            0.0                 0.0      0.0     0.0   0.0       0.0     0.0         0.0      0.0
+1       Aqua  1081033         0.0      0.0               0.0           0.0         0.0       0.0        0.0    0.0    0.0      0.0             0.0       0.0               0.0             0.0  0.0          0.0         0.0   0.0    0.0           0.72         0.0            0.0                 0.0      0.0     0.0   0.0       0.0     0.0         0.0      0.0
+2  Suomi NPP  2889092         0.0      0.0               0.0           0.0         0.0       0.0        0.0    0.0    0.0      0.0             0.0       0.0               0.0             0.0  0.0          0.0         0.0   0.0    0.0           0.00         0.0            0.0                 0.0      0.0     0.0   0.0       0.0     0.0         0.0      0.0
+3    NOAA-20  1827488         0.0      0.0               0.0           0.0         0.0       0.0        0.0    0.0    0.0      0.0             0.0       0.0               0.0             0.0  0.0          0.0         0.0   0.0    0.0           2.56         0.0            0.0                 0.0      0.0     0.0   0.0       0.0     0.0         0.0      0.0 
+
+== categoricals ==
+   satellite instrument        n
+0       Aqua      MODIS  1081033
+1    NOAA-20      VIIRS  1827488
+2  Suomi NPP      VIIRS  2889092
+3      Terra      MODIS   656291 
+
+   satellite quality        n
+0       Aqua     NRT     7805
+1       Aqua      SP  1073228
+2    NOAA-20     NRT    46872
+3    NOAA-20      SP  1780616
+4  Suomi NPP      SP  2889092
+5      Terra     NRT     3370
+6      Terra      SP   652921 
+
+   satellite daynight        n
+0       Aqua        D  1000024
+1       Aqua        N    81009
+2    NOAA-20        D  1348183
+3    NOAA-20        N   479305
+4  Suomi NPP        D  2117389
+5  Suomi NPP        N   771703
+6      Terra        D   493089
+7      Terra        N   163202 
+
+    satellite confidence_class        n
+0        Aqua             high   335869
+1        Aqua              low    45201
+2        Aqua          nominal   699963
+3     NOAA-20             high   127199
+4     NOAA-20              low   167195
+5     NOAA-20          nominal  1533094
+6   Suomi NPP             high   228308
+7   Suomi NPP              low   252260
+8   Suomi NPP          nominal  2408524
+9       Terra             high   193773
+10      Terra              low    37882
+11      Terra          nominal   424636 
+
+    satellite  type_reported        n
+0        Aqua              0  1059481
+1        Aqua              1        3
+2        Aqua              2    13728
+3        Aqua              3       16
+4        Aqua           <NA>     7805
+5     NOAA-20              0  1720674
+6     NOAA-20              2    53477
+7     NOAA-20              3     6465
+8     NOAA-20           <NA>    46872
+9   Suomi NPP              0  2800306
+10  Suomi NPP              2    80724
+11  Suomi NPP              3     8062
+12      Terra              0   633580
+13      Terra              1        1
+14      Terra              2    19285
+15      Terra              3       55
+16      Terra           <NA>     3370 
+
+    satellite  type_final        n
+0        Aqua           0  1067245
+1        Aqua           1        3
+2        Aqua           2    13769
+3        Aqua           3       16
+4     NOAA-20           0  1766285
+5     NOAA-20           2    54737
+6     NOAA-20           3     6466
+7   Suomi NPP           0  2800306
+8   Suomi NPP           2    80724
+9   Suomi NPP           3     8062
+10      Terra           0   636891
+11      Terra           1        1
+12      Terra           2    19343
+13      Terra           3       56 
+
+   satellite  type_inferred        n
+0       Aqua          False  1073228
+1       Aqua           True     7805
+2    NOAA-20          False  1780616
+3    NOAA-20           True    46872
+4  Suomi NPP          False  2889092
+5      Terra          False   652921
+6      Terra           True     3370 
+
+    satellite version        n
+0        Aqua    6.03   233765
+1        Aqua  6.1NRT     7805
+2        Aqua     6.2   733564
+3        Aqua   61.03   105899
+4     NOAA-20       2  1780616
+5     NOAA-20  2.0NRT    46872
+6   Suomi NPP       2  2889092
+7       Terra    6.03   130486
+8       Terra  6.1NRT     3370
+9       Terra     6.2   468727
+10      Terra   61.03    53708 
+
+   satellite country_source        n
+0       Aqua           file  1063704
+1       Aqua   lookup_01deg    16937
+2       Aqua    lookup_1deg      392
+3    NOAA-20           file  1728797
+4    NOAA-20   lookup_01deg    94668
+5    NOAA-20    lookup_1deg     4023
+6  Suomi NPP           file  2889092
+7      Terra           file   648712
+8      Terra   lookup_01deg     7179
+9      Terra    lookup_1deg      400 
+
+== confidence_raw by class (MODIS numeric) ==
+    satellite confidence_class   mn  mx   k
+0        Aqua             high  100  99  21
+1        Aqua              low    0   9  30
+2        Aqua          nominal   30  79  50
+3     NOAA-20             high    h   h   1
+4     NOAA-20              low    l   l   1
+5     NOAA-20          nominal    n   n   1
+6   Suomi NPP             high    h   h   1
+7   Suomi NPP              low    l   l   1
+8   Suomi NPP          nominal    n   n   1
+9       Terra             high  100  99  21
+10      Terra              low    0   9  30
+11      Terra          nominal   30  79  50 
+
+== numeric ranges ==
+   satellite  frp_min  frp_med   frp_mean   frp_p99   frp_max  frp_le0  scan_min  scan_med  scan_max  tr_min  tr_max   b_min  b_max         d0         d1
+0       Aqua     0.00    22.00  59.067658  656.6000  10647.90    153.0      1.00      1.30      4.80    1.00    2.00  300.00  509.6 2002-07-04 2026-11-14
+1    NOAA-20     0.00     5.52  12.650195  133.0813   1712.49    953.0      0.32      0.44      0.80    0.36    0.78  207.93  367.0 2018-04-01 2026-11-14
+2  Suomi NPP    -1.52     5.46  12.732605  131.3100   2066.40   1325.0      0.32      0.44      0.80    0.36    0.78    0.00  367.0 2012-01-20 2025-12-31
+3      Terra     0.00    18.10  46.404532  496.0100  13294.50    111.0      1.00      1.30      4.82    1.00    2.00  300.00  500.0 2000-10-31 2026-11-14 
+
+== local_date vs utc date offset ==
+   satellite  off        n
+0       Aqua    0  1081033
+1    NOAA-20   -1     9205
+2    NOAA-20    0  1818283
+3  Suomi NPP   -1    13905
+4  Suomi NPP    0  2875187
+5      Terra   -1   163161
+6      Terra    0   493130 
+
+== filter removal per satellite (Argentina, SP/archive only) ==
+   satellite    n_all  pct_nonveg  pct_low  pct_kept  pct_night_all  pct_night_kept
+0       Aqua  1073228        1.28     4.19     94.71           7.53            7.22
+1    NOAA-20  1780616        3.37     9.18     87.55          26.28           26.93
+2  Suomi NPP  2889092        3.07     8.73     88.28          26.71           27.41
+3      Terra   652921        2.96     5.77     91.86          24.76           24.62 
+
+== type_final x satellite, Argentina ==
+    type_final  satellite        n    frp
+0            0       Aqua  1067245   59.6
+1            0    NOAA-20  1766285   13.0
+2            0  Suomi NPP  2800306   13.1
+3            0      Terra   636891   47.4
+4            1       Aqua        3   33.7
+5            1      Terra        1   72.0
+6            2       Aqua    13769   19.4
+7            2    NOAA-20    54737    2.5
+8            2  Suomi NPP    80724    2.4
+9            2      Terra    19343   12.6
+10           3       Aqua       16  251.4
+11           3    NOAA-20     6466    5.8
+12           3  Suomi NPP     8062    5.3
+13           3      Terra       56   51.2 
+
+== exact duplicates (same sat, time, lat, lon) ==
+   satellite  dup_rows
+0  Suomi NPP       2.0
+1    NOAA-20       1.0 
+

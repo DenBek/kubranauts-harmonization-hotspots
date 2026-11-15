@@ -15,13 +15,18 @@ All data is in the Cloudflare R2 bucket `firms-data`.
 | `silver/detections/source={source}/year={year}/{archive,sp,nrt}.parquet` | **Silver:** one clean row per detection from every satellite, with the same columns everywhere: satellite, quality (SP/NRT), UTC time, local solar date, location, country, confidence class, FRP, fire type and `is_vegetation_fire`. Read with `read_parquet('r2://firms-data/silver/detections/*/*/*.parquet', hive_partitioning = true)`. |
 | `silver/lookups/` | Country for each 0.1° and 1° cell, and 0.05° cells that are mostly static sources (volcanoes, gas flares, industry, offshore). Used to fill in country for API rows and fire type for NRT rows. |
 | `analysis/agg_monthly.parquet` | Monthly counts and FRP by sensor, satellite, country, type, day/night and confidence. |
-| `gold/gold_cell_monthly.parquet` | One row per grid cell per month. The map reads this. |
-| `gold/gold_region_monthly.parquet` | One row per region per month, including anomaly class and rank. The calendar reads this. |
+| `gold/gold_cell_monthly.parquet` | One row per grid cell per month. Draw an area reads this. |
+| `gold/gold_region_monthly.parquet` | One row per region per month, including anomaly class and rank. The Fire calendar and The problem read this. |
 | `gold/gold_region_annual.parquet` | One row per region per year, including season start, midpoint, and end. |
 | `gold/gold_region_analogs.parquet` | Closest earlier years for the current year. |
 | `gold/gold_region_headline.parquet` | One summary sentence per region. |
 | `gold/gold_calibration.parquet` | Monthly VIIRS-to-MODIS ratios and the fit evidence. |
 | `publish/gold_*.json` | The JSON the website reads. Written by `scripts/export_calendar.py` from the matching gold Parquet file. Until that object exists, the site uses the sample in `web/sample/`. |
+
+## Where to start
+
+- New to the project: [HANDOVER.md](HANDOVER.md) (one page), then the documentation index in [docs/README.md](docs/README.md).
+- Argentina MVP (the demo app): [harmonization/argentina/](harmonization/argentina/); data schema in [gold/README.md](harmonization/argentina/gold/README.md).
 
 ## Repository layout
 

@@ -27,7 +27,7 @@ var METRICS = [
   { value: "viirs", label: "VIIRS" },
 ];
 var FIELD = { harmonized: "harmonized_cell_days", modis: "modis_cell_days", viirs: "viirs_cell_days" };
-var LABEL = { harmonized: "Harmonized cell-days", modis: "MODIS cell-days", viirs: "VIIRS cell-days" };
+var LABEL = { harmonized: "Harmonized detections", modis: "MODIS detections", viirs: "VIIRS detections" };
 
 function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, function (c) {
@@ -124,7 +124,7 @@ function loadRegion(first) {
     banner.textContent = "No grid cells for " + monthLabel(y, m) + " in this dataset. Showing the latest month instead.";
   }
 
-  document.getElementById("eyebrow").textContent = regionName(currentRegion()) + " · grid cells";
+  document.getElementById("eyebrow").textContent = "Argentina · grid cells";
   var slider = document.getElementById("slider");
   slider.max = Math.max(0, months.length - 1);
   slider.value = state.index;
@@ -238,15 +238,13 @@ function drawMonthTotal() {
   var visible = monthRows(state.index);
   var total = visible.reduce(function (sum, row) { return sum + (metricValue(row) || 0); }, 0);
   var m = months[state.index];
-  host.appendChild(el("div", { class: "kpi-label", text: m ? "Region total, " + monthLabel(m.year, m.month) : "Region total" }));
+  host.appendChild(el("div", { class: "kpi-label", text: m ? "Argentina total, " + monthLabel(m.year, m.month) : "Argentina total" }));
   var value = el("div", { class: "kpi-value", style: "font-size:1.6rem", text: formatNumber(total) });
-  value.appendChild(el("span", { class: "unit", text: "cell-days · " + visible.length + " cells" }));
+  value.appendChild(el("span", { class: "unit", text: "detections · " + visible.length + " cells" }));
   host.appendChild(value);
   if (m) {
-    var region = encodeURIComponent(currentRegion());
     host.appendChild(el("div", { style: "display:flex;flex-wrap:wrap;gap:0.3rem 1rem" }, [
-      el("a", { class: "small", href: "calendar.html?region=" + region + "&year=" + m.year + "&month=" + m.month, text: "This month in the calendar →" }),
-      el("a", { class: "small", href: "overview.html?region=" + region, text: "Region overview →" }),
+      el("a", { class: "small", href: "regions.html?region=argentina&year=" + m.year + "&month=" + m.month, text: "This month in the calendar →" }),
     ]));
   }
 }
@@ -314,16 +312,16 @@ function drawDetail() {
   var ratioText = row.calibration_ratio === null ? "Not applied" : String(row.calibration_ratio);
   var dl = el("dl", { class: "metric compact" });
   dl.innerHTML =
-    metricItem(term("harmonized-cell-days", "Harmonized"), formatNumber(row.harmonized_cell_days)) +
+    metricItem(term("harmonized-detections", "Harmonized"), formatNumber(row.harmonized_cell_days)) +
     metricItem(term("source", "Source"), escapeHtml(sourceLabel(row.source)) + (row.is_provisional ? ", provisional" : "")) +
-    metricItem(term("modis", "MODIS"), formatNumber(row.modis_cell_days) + " <span class='small muted'>cell-days · " + formatNumber(row.modis_hotspots) + " " + term("hotspot", "hotspots") + "</span>") +
-    metricItem(term("viirs", "VIIRS"), formatNumber(row.viirs_cell_days) + " <span class='small muted'>cell-days · " + formatNumber(row.viirs_hotspots) + " hotspots</span>") +
+    metricItem(term("modis", "MODIS"), formatNumber(row.modis_cell_days) + " <span class='small muted'>detections · " + formatNumber(row.modis_hotspots) + " " + term("hotspot", "hotspots") + "</span>") +
+    metricItem(term("viirs", "VIIRS"), formatNumber(row.viirs_cell_days) + " <span class='small muted'>detections · " + formatNumber(row.viirs_hotspots) + " hotspots</span>") +
     metricItem(term("calibration-ratio", "Calibration ratio"), ratioText) +
     metricItem(term("stratum", "Stratum"), escapeHtml(row.stratum_id));
   host.appendChild(dl);
   host.appendChild(el("p", { class: "small muted", text: row.calibration_ratio === null
     ? "VIIRS is the source for this cell, so the month is already on the common scale; the ratio is only used when a cell has to be filled from MODIS."
-    : "VIIRS cell-days divided by MODIS cell-days for this biome and month. It lifts the MODIS count onto the VIIRS scale." }));
+    : "VIIRS detections divided by MODIS Aqua detections for this calendar month, measured over Argentina in 2012 to 2019. It lifts the MODIS count onto the VIIRS scale." }));
 }
 
 // ---------- timeline controls ----------
@@ -476,7 +474,7 @@ function drawArea() {
     var header = ["cell_id", "lat_center", "lon_center", "year", "month", "harmonized_cell_days", "modis_cell_days", "viirs_cell_days", "modis_hotspots", "viirs_hotspots", "source", "calibration_ratio", "is_provisional", "stratum_id"];
     var sorted = inside.slice().sort(function (a, b) { return a.year - b.year || a.month - b.month || a.cell_id - b.cell_id; });
     downloadCsv(currentRegion() + "_area_cells.csv", header, sorted.map(function (row) {
-      return header.map(function (key) { return row[key]; });
+      return header.map(function (key) { return (row[key] === null || row[key] === undefined) && /hotspots$/.test(key) ? "not included" : row[key]; });
     }));
   });
   host.appendChild(download);

@@ -1,0 +1,6 @@
+check,variant,viirs_removed_pct,factor_change_mean_abs_pct,factor_change_max_abs_pct,bias_pct,mdape,p90_abs_pct,annual_max_abs_pct
+1 flare mask,none,0.0,0.0,0.0,-7.23,9.45,19.02,8.88
+1 flare mask,vaca_muerta box,1.46,1.73,3.15,-6.89,9.39,18.47,9.37
+1 flare mask,persistent>=200d + vaca_muerta,30.55,3.41,6.4,-6.37,8.34,20.55,10.21
+2 day vs D+N,day+night (default),,,,-7.23,9.45,19.02,8.88
+2 day vs D+N,day only,,,,-7.67,8.74,21.53,9.53
