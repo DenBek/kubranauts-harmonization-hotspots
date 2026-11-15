@@ -13,7 +13,9 @@
 //   TWILIO_FROM          the Twilio phone number, like +12125550123
 //   TWILIO_RECIPIENTS    who may receive, as Name=number pairs: Akbar=+16465550123,Deniz=+19175550123
 //   TWILIO_LIVE          true
-// Optional: TWILIO_WHATSAPP_FROM (default +14155238886, Twilio's WhatsApp sandbox).
+// Optional: TWILIO_CHANNELS   which ways to send, comma separated: call, sms, whatsapp (default: call only, because
+//                             US texts need an A2P 10DLC registered number and WhatsApp needs the sandbox joined)
+//           TWILIO_WHATSAPP_FROM (default +14155238886, Twilio's WhatsApp sandbox).
 // Do not commit the values. Codespaces secrets are a different store and this function cannot see them.
 //
 // Safety: nothing is sent unless TWILIO_LIVE is "true", the request asks for it (send: true), and "to" names one of
@@ -21,6 +23,7 @@
 
 var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 var CHANNELS = ["sms", "whatsapp", "call"];
+var DEFAULT_CHANNELS = ["call"];
 var MAX_TEXT = 480;
 var WHATSAPP_SANDBOX = "+14155238886";
 
@@ -53,6 +56,13 @@ function recipients(env) {
   return out;
 }
 
+// The ways to send that this deployment allows, in the order the page shows them.
+function channels(env) {
+  var want = String((env && env.TWILIO_CHANNELS) || "").toLowerCase().split(",").map(function (c) { return c.trim(); });
+  var on = CHANNELS.filter(function (c) { return want.indexOf(c) > -1; });
+  return on.length ? on : DEFAULT_CHANNELS.slice();
+}
+
 function liveConfig(env) {
   env = env || {};
   return env.TWILIO_LIVE === "true" && !!env.TWILIO_ACCOUNT_SID && !!env.TWILIO_AUTH_TOKEN && !!env.TWILIO_FROM && recipients(env).length > 0;
@@ -75,7 +85,7 @@ export async function onRequestGet(context) {
   return json({
     live: liveConfig(env),
     recipients: recipients(env).map(function (r) { return r.name; }),
-    channels: CHANNELS,
+    channels: channels(env),
     settings: seen,
     notes: notes,
   });
@@ -102,7 +112,11 @@ export async function onRequestPost(context) {
   if (!liveConfig(env)) {
     return json({ live: false, sent: false, sms: sms, error: "Sending is off on this copy of the site: Twilio is not set up here. The preview shows the exact text." }, 503);
   }
-  var channel = CHANNELS.indexOf(body.channel) > -1 ? body.channel : "sms";
+  var allowed = channels(env);
+  var channel = body.channel || allowed[0];
+  if (allowed.indexOf(channel) === -1) {
+    return json({ live: true, sent: false, sms: sms, error: "That way of sending is off on this site. Allowed: " + allowed.join(", ") + "." }, 400);
+  }
   var who = recipients(env).filter(function (r) { return r.name === body.to; })[0];
   if (!who) return json({ live: true, sent: false, sms: sms, error: "Pick one of the listed recipients." }, 400);
 
