@@ -143,3 +143,7 @@ Each page requests only the tables it draws.
 - Parquet dates become ISO strings in the JSON.
 - A global cell file will not fit in the browser. Keep the demo slice.
 - `.dev.vars` and `.wrangler/` are gitignored. Do not commit keys.
+
+## Chat assistant
+
+`POST /api/chat` (`functions/api/chat.js`) calls Gemini with `web/chat_context.txt` and three lookup tools that read `publish/chat_lookup.json` through the `FIRMS` binding. Set `GEMINI_API_KEY` on the Pages project for Production and Preview (optional `GEMINI_MODEL`). After every gold rebuild run `scripts/export_calendar.py` so the lookup file is refreshed. Check a deploy with `python scripts/test_chat.py https://<your-site>`. Local preview: `python scripts/dev_server.py` (reads the key from `.env`).

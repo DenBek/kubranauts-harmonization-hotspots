@@ -13,15 +13,24 @@
   var MAX_KEPT = 40;          // messages kept in the browser
   var MAX_SENT = 12;          // messages sent per request (server caps at 20)
   var TIMEOUT_MS = 30000;
-  var SUGGESTIONS = [
+  // Pool of suggested questions. Anything the visitor has already asked is left out, and the next ones move up.
+  var POOL = [
+    "Was September 2020 unusual in Argentina, and can I trust it?",
     "Why do we need to harmonize MODIS and VIIRS?",
-    "How does the conversion work?",
+    "When was the busiest month in the Paraná Delta?",
     "How accurate is it?",
+    "Is October 2026 a record low?",
     "What does the hatched square mean?",
-    "Why does the calendar start in 2003?",
+    "What happened in the north-east in January 2022?",
     "What can I not conclude from this?",
+    "How did 2020 compare as a year for the whole country?",
+    "What does \"likely range\" mean?",
+    "Which were the busiest months in Patagonia?",
+    "Why can I not trust small areas before 2012?",
+    "How does the conversion work?",
+    "Why does the calendar start in 2003?",
   ];
-  var GREETING = "Hi! I can explain what this fire calendar shows, how the MODIS and VIIRS counts were joined into one record, and how far to trust the numbers. I know the project notes for Argentina. I can't look up a specific month: use the Fire calendar page for that.";
+  var GREETING = "Hi! Ask me about a month, a year or a region and I will look it up in the same data the calendar uses, and tell you how far to trust it. I can also explain how MODIS and VIIRS counts were joined into one record. I only know Argentina.";
 
   // ---------- conversation store (shared by every panel on the page) ----------
 
@@ -35,7 +44,7 @@
       var raw = JSON.parse(sessionStorage.getItem(STORE_KEY) || "[]");
       return Array.isArray(raw) ? raw.filter(function (m) {
         return m && (m.role === "user" || m.role === "model") && typeof m.text === "string";
-      }).slice(-MAX_KEPT) : [];
+      }).map(function (m) { return { role: m.role, text: m.text, links: m.links ? safeLinks(m.links) : undefined }; }).slice(-MAX_KEPT) : [];
     } catch (err) { return []; }
   }
 
@@ -44,7 +53,35 @@
     try { sessionStorage.setItem(STORE_KEY, JSON.stringify(messages)); } catch (err) { /* private mode: keep in memory */ }
   }
 
-  function notify() { panels.forEach(function (p) { p.render(); }); }
+  function nextSuggestions(n) {
+    var asked = {};
+    messages.forEach(function (m) { if (m.role === "user") asked[m.text.trim().toLowerCase()] = true; });
+    return POOL.filter(function (q) { return !asked[q.toLowerCase()]; }).slice(0, n);
+  }
+
+  // The side list on the chat page. It stays visible, and refreshes after every question.
+  var sideLists = [];
+
+  function renderSide(host) {
+    host.textContent = "";
+    var list = nextSuggestions(6);
+    if (!list.length) {
+      host.appendChild(node("p", "chat-suggest-done", "You have asked everything on the list. Type your own question below."));
+      return;
+    }
+    list.forEach(function (q) {
+      var b = node("button", "chat-chip", q);
+      b.type = "button";
+      b.disabled = busy;
+      b.addEventListener("click", function () { send(q); });
+      host.appendChild(b);
+    });
+  }
+
+  function notify() {
+    panels.forEach(function (p) { p.render(); });
+    sideLists.forEach(renderSide);
+  }
 
   function send(text) {
     text = String(text || "").trim().slice(0, MAX_INPUT);
@@ -61,8 +98,9 @@
     request();
   }
 
-  function request() {
+  function request(attempt) {
     busy = true;
+    var again = false;
     notify();
     var controller = window.AbortController ? new AbortController() : null;
     var timer = setTimeout(function () { if (controller) controller.abort(); }, TIMEOUT_MS);
@@ -74,17 +112,28 @@
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (!res.ok || !data.reply) throw new Error(data.error || "Something went wrong. Please try again.");
-        messages.push({ role: "model", text: String(data.reply) });
+        messages.push({ role: "model", text: String(data.reply), links: safeLinks(data.lookups) });
         save();
       });
     }).catch(function (err) {
+      // one quiet automatic retry for a blip (busy model, network); the visitor only sees an error if it fails twice
+      if (!attempt && !(err && err.name === "AbortError")) again = true;
       failed = err && err.name === "AbortError" ? "The assistant took too long. Please try again." :
         (err && err.message && err.message !== "Failed to fetch" ? err.message : "Could not reach the assistant. Check your connection and try again.");
     }).then(function () {
       clearTimeout(timer);
+      if (again) { failed = null; setTimeout(function () { request(1); }, 1500); return; }
       busy = false;
       notify();
     });
+  }
+
+  // Links come from the server; only same-site calendar links are kept.
+  function safeLinks(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (l) {
+      return l && typeof l.label === "string" && typeof l.href === "string" && /^regions\.html\?[A-Za-z0-9_=&]+$/.test(l.href);
+    }).slice(0, 3).map(function (l) { return { label: l.label.slice(0, 80), href: l.href }; });
   }
 
   function clearAll() {
@@ -204,19 +253,29 @@
     input.addEventListener("input", grow);
     clearBtn.addEventListener("click", clearAll);
 
-    function bubble(role, text) {
+    function bubble(role, text, links) {
       var row = node("div", "chat-msg " + (role === "user" ? "from-user" : "from-bot"));
       var body = node("div", "chat-bubble");
       if (role === "user") body.textContent = text;
       else richText(body, text);
       row.appendChild(body);
+      if (links && links.length) {
+        var box = node("div", "chat-links");
+        box.appendChild(node("span", "chat-links-label", "Open in the calendar:"));
+        links.forEach(function (l) {
+          var a = node("a", "chat-link", l.label);
+          a.href = l.href;
+          box.appendChild(a);
+        });
+        body.appendChild(box);
+      }
       return row;
     }
 
     function render() {
       log.textContent = "";
       log.appendChild(bubble("model", GREETING));
-      messages.forEach(function (m) { log.appendChild(bubble(m.role, m.text)); });
+      messages.forEach(function (m) { log.appendChild(bubble(m.role, m.text, m.links)); });
       if (busy) {
         var typing = node("div", "chat-msg from-bot");
         var dots = node("div", "chat-bubble chat-typing");
@@ -242,7 +301,7 @@
 
       chips.textContent = "";
       if (!messages.length && !busy) {
-        SUGGESTIONS.forEach(function (q) {
+        nextSuggestions(4).forEach(function (q) {
           var chip = node("button", "chat-chip", q);
           chip.type = "button";
           chip.addEventListener("click", function () { send(q); });
@@ -267,6 +326,8 @@
   function mountPage(host) {
     var panel = createPanel(host);
     window.addEventListener("pageshow", panel.render);
+    var side = document.getElementById("chat-suggest");
+    if (side) { sideLists.push(side); renderSide(side); }
     return panel;
   }
 

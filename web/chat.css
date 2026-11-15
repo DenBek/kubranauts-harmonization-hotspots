@@ -87,3 +87,13 @@
 .chat-compact .chat-note { font-size: 0.72rem; }
 @media (max-width: 480px) { .chat-fab-text { display: none; } .chat-fab { padding: 0.8rem; } }
 @media print { .chat-widget { display: none; } }
+
+/* links to the calendar under an answer */
+.chat-links { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: center; font-size: 0.85rem; }
+.chat-links-label { color: var(--muted); }
+.chat-link { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+
+/* suggested questions beside the chat */
+.chat-suggest { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+.chat-suggest .chat-chip { text-align: left; white-space: normal; line-height: 1.3; }
+.chat-suggest-done { margin: 0; font-size: 0.88rem; color: var(--muted); }
