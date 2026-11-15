@@ -11,7 +11,6 @@
     ["draw", "Draw an Area"],
     ["accuracy", "How Accurate Is This?"],
     ["index", "Map"],
-    ["calendar", "Calendar"],
     ["glossary", "Terms"],
     // Hidden from the nav (still in the repo): overview, year and briefing depend on the analogs table, which the
     // Argentina MVP does not produce, or on SMS preview copy. See harmonization/argentina/SCOPE_AND_GAPS.md.
@@ -58,6 +57,8 @@
   }
 
   var select = document.getElementById("global-region");
+  // The Map page shows whole-country cells only (its cells carry no sub-region), so the picker would not change anything there.
+  if (path === "index") select.closest(".region-picker").style.display = "none";
   fillRegionSelect(select, currentRegion());
   syncLinks(currentRegion());
   select.addEventListener("change", function () { setRegion(select.value); });

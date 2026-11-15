@@ -40,7 +40,7 @@
         <label>From <select id="year-from" aria-label="From year"></select></label>
         <label>to <select id="year-to" aria-label="To year"></select></label>
       </form>
-      <p class="notice" id="resolution-note"><strong>Resolution limit:</strong> the data is summed over 1-degree cells (about 100 km). A shape smaller than one cell uses the whole cell, and before 2012 it is flagged "indicative only", not hidden.</p>
+      <p class="notice" id="resolution-note"><strong>Resolution limit:</strong> the data is summed over 1-degree cells (about 100 km). A shape smaller than one cell uses the whole cell. Before 2012 each month carries a reliability flag from the number of MODIS detections in the cell, so small or quiet areas are flagged, not hidden.</p>
     </section>
 
     <div id="result" hidden>

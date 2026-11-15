@@ -198,7 +198,12 @@ function formatCompact(value) {
 function formatRatio(value) {
   if (isMissing(value)) return "–";
   if (Number(value) > 10) return "more than 10×";   // the exact ratio stays in the CSV downloads
-  return (Math.round(Number(value) * 100) / 100).toFixed(2) + "×";
+  var v = Number(value);
+  var r = Math.round(v * 100) / 100;
+  // A ratio a hair either side of a colour boundary (0.5, 0.8, 1.2, 1.8) must not read as exactly on it,
+  // or "0.50×" would sit next to "Much below".
+  if (r !== v && [0.5, 0.8, 1.2, 1.8].indexOf(r) > -1) return (v < r ? "just under " : "just over ") + r.toFixed(2) + "×";
+  return r.toFixed(2) + "×";
 }
 
 function monthLabel(year, month) {

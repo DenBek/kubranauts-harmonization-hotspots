@@ -31,7 +31,7 @@ scaled by days ÷ valid days (`coverage` = valid fraction). The current month is
 | `ar_nw` | North-west and western Chaco | lat > −30, lon ≤ −60.5 |
 | `ar_c` | Centre (Pampas, Córdoba, San Luis, La Pampa) | −39 < lat ≤ −30, not NE |
 | `ar_s` | Patagonia | lat ≤ −39 |
-| `ar_delta` | Paraná Delta (box) | lat −34.5…−32.1, lon −61.0…−58.4 (inside `ar_ne`) |
+| `ar_delta` | Paraná Delta (box) | lat −34.5…−32.1, lon −61.0…−58.4 (mostly inside `ar_ne`; its western strip, lon −61.0 to −60.5, falls in `ar_c`) |
 
 NE/NW/C/S partition the country and are the zones the method was validated on. They are rough boxes, not ecoregions.
 `stratum_id` is always `argentina`.

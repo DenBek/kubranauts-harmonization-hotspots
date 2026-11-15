@@ -124,7 +124,7 @@ function loadRegion(first) {
     banner.textContent = "No grid cells for " + monthLabel(y, m) + " in this dataset. Showing the latest month instead.";
   }
 
-  document.getElementById("eyebrow").textContent = regionName(currentRegion()) + " · grid cells";
+  document.getElementById("eyebrow").textContent = "Argentina · grid cells";
   var slider = document.getElementById("slider");
   slider.max = Math.max(0, months.length - 1);
   slider.value = state.index;
@@ -238,15 +238,13 @@ function drawMonthTotal() {
   var visible = monthRows(state.index);
   var total = visible.reduce(function (sum, row) { return sum + (metricValue(row) || 0); }, 0);
   var m = months[state.index];
-  host.appendChild(el("div", { class: "kpi-label", text: m ? "Region total, " + monthLabel(m.year, m.month) : "Region total" }));
+  host.appendChild(el("div", { class: "kpi-label", text: m ? "Argentina total, " + monthLabel(m.year, m.month) : "Argentina total" }));
   var value = el("div", { class: "kpi-value", style: "font-size:1.6rem", text: formatNumber(total) });
   value.appendChild(el("span", { class: "unit", text: "detections · " + visible.length + " cells" }));
   host.appendChild(value);
   if (m) {
-    var region = encodeURIComponent(currentRegion());
     host.appendChild(el("div", { style: "display:flex;flex-wrap:wrap;gap:0.3rem 1rem" }, [
-      el("a", { class: "small", href: "calendar.html?region=" + region + "&year=" + m.year + "&month=" + m.month, text: "This month in the calendar →" }),
-      el("a", { class: "small", href: "overview.html?region=" + region, text: "Region overview →" }),
+      el("a", { class: "small", href: "regions.html?region=argentina&year=" + m.year + "&month=" + m.month, text: "This month in the calendar →" }),
     ]));
   }
 }
@@ -323,7 +321,7 @@ function drawDetail() {
   host.appendChild(dl);
   host.appendChild(el("p", { class: "small muted", text: row.calibration_ratio === null
     ? "VIIRS is the source for this cell, so the month is already on the common scale; the ratio is only used when a cell has to be filled from MODIS."
-    : "VIIRS detections divided by MODIS detections for this biome and month. It lifts the MODIS count onto the VIIRS scale." }));
+    : "VIIRS detections divided by MODIS Aqua detections for this calendar month, measured over Argentina in 2012 to 2019. It lifts the MODIS count onto the VIIRS scale." }));
 }
 
 // ---------- timeline controls ----------

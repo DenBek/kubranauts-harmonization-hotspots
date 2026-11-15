@@ -26,7 +26,9 @@ Owner = not recorded in the repo; "unassigned" until the team fills it in.
 | Web: The Problem, Regions, Draw an Area, How Accurate Is This? | done, checked locally | unassigned | 2026-11-15 | new pages; not yet deployed (G-11) |
 | Pitch figures (4) | done | unassigned | 2026-11-14 | `plots/pitch_1..4_*.png` |
 | Method write-up | done | unassigned | 2026-11-15 | `HARMONIZATION_APPROACH.md` |
-| Deploy to Cloudflare Pages | not started | unassigned | 2026-11-15 | needs commit and push; binding `FIRMS` on Production and Preview |
+| Deploy to Cloudflare Pages | preview only | unassigned | 2026-11-15 | `dev` preview live with R2 data; production still serves `main` (G-24) |
+| Data verification script | done | unassigned | 2026-11-15 | `scripts/verify_app_data.py`: 47 PASS on local JSON and on the dev preview |
+| Reading guide and pitch cheat sheet | done | unassigned | 2026-11-15 | `APP_READING_GUIDE.md`, `EXPLAIN_IT.md` |
 | Build runs in a fresh Codespace | not started | unassigned | 2026-11-14 | depends on local DuckDB (G-12) |
 | Terra bridge 2000-11 to 2002-06 | not started | unassigned | 2026-11-14 | out of MVP (D-2) |
 
@@ -103,6 +105,15 @@ Severity is our judgement. "Open" unless marked.
 | G-21 | Links to the two documents point at the `dev` branch on GitHub | 404 until the docs are pushed | low | Push; change `DOCS_BASE` in `web/mvp.js` after merging to main |
 | G-22 | The Draw page picks the reliability bin from raw Aqua counts, not coverage-scaled; the cell JSON has no `coverage` | A bin can differ by one step in a month with many missing days | low | Add coverage to the cell export |
 | G-23 | Visual checks were done in headless Edge only | No screen-reader or phone test | low | Test in browsers and on a phone |
+| G-24 | Production `kubranauts-hotspots.pages.dev` serves `main` (old site): `/problem.html` falls back to the old Map, `/api/gold/gold_accuracy` answers "Unknown table." The new pages are live only on `dev.kubranauts-hotspots.pages.dev` (curl, 2026-11-15) | Judges given the production link see the old site | **high** | Merge `dev` into `main`, or share the preview link |
+| G-25 | **Resolved 2026-11-15:** Region picker hidden on the Map page; labels read "Argentina total". Map page: the region picker does not filter cells (every region has `stratum_id = argentina`), so "Region total" for any sub-region is the whole country | Misleading total on the Map page | medium | Filter `web/map.js` cells by the region box, or hide the picker there |
+| G-26 | **Resolved 2026-11-15:** Text now says one factor per calendar month for Argentina; Overview link removed. Map page cell text says the ratio is "for this biome and month" (it is per calendar month, whole country) and links to the hidden Overview page | Wrong statement on screen | low | Edit the two strings in `web/map.js` |
+| G-27 | **Resolved 2026-11-15:** Calendar removed from the nav (page file kept; Regions replaces it); Map links to Regions. Old Calendar page: the no-estimate month (Paraná Delta 2005-06) is painted "normal" and labelled "Provisional"; converted months are not hatched; help text says VIIRS is "empty before April 2018" (it starts Feb 2012); "Text briefing" links to a hidden page | Contradicts the Regions page | medium | Fix `web/calendar.js`, or drop Calendar from the nav (Regions covers it) |
+| G-28 | **Moved to Future Scope 2026-11-15; noted in `HARMONIZATION_APPROACH.md` §8 and `EXPLAIN_IT.md`.** **Method question, not changed.** Gap-day scaling sums detections on all days, including flagged gap days, then scales by days ÷ valid days, so flagged days count twice. Overstates six shown months: NOAA-20 2024-02 +10.4%, 2023-07 +6.3%, 2023-09 +5.9%; Aqua 2003-05 +4.5%, 2003-03 +2.5%; Suomi NPP 2012-03 +0.7% (query on `cellday` LEFT JOIN `valid`, 2026-11-15) | Small level error in a few months; inside the noise of D-18 but not stated | low | Team decides: sum valid days only before scaling (needs a rebuild and re-check) |
+| G-29 | **Moved to Future Scope 2026-11-15.** Exact ties are ordered by floating-point noise (Patagonia March 2010 and 2011, both 185.4) | Rank can swap between rebuilds (seen once: local JSON vs R2) | low | Round before ranking, or rank ties as equal |
+| G-30 | **Resolved 2026-11-15:** `formatRatio` shows "just under 0.50×" / "just over 1.20×" near a class boundary. Published ratios are rounded to 3 decimals: 0.4996 shows "0.50×" but is classed "much below" (Paraná Delta 2019-08) | Looks inconsistent to a careful reader | low | Display class from the rounded ratio, or show 2 significant decimals only |
+| G-31 | **Resolved 2026-11-15:** README sentence fixed. `gold/README.md` says the Delta box is "inside `ar_ne`"; its western strip (lon −61.0 to −60.5) falls in `ar_c` | Doc inaccuracy | low | Fix the README sentence |
+| G-32 | **Resolved 2026-11-15:** Draw note reworded. Draw page text says a small shape before 2012 is "flagged indicative only"; the flag follows the Aqua count of the whole cell and can be better | Wording overstates the rule | low | Reword in `web/draw.html` |
 
 ## 5. Open questions (need a human)
 
@@ -115,6 +126,7 @@ Severity is our judgement. "Open" unless marked.
 5. Should insufficient-data months be excluded from annual totals or flagged only (G-6)?
 6. Rename `*_cell_days` columns to `*_count` now or after the first live release (D-4)?
 7. Keep the "Partly sample" pill while analogs stay on sample data, or hide the analog panels?
+8. (New 2026-11-15) Should detections on flagged gap days be dropped before scaling (G-28)? Method change; needs a decision. Now in Future Scope.
 
 ## 6. Future scope
 
@@ -132,9 +144,14 @@ Severity is our judgement. "Open" unless marked.
 | Validation | Held-out anomaly agreement at zone and block level | G-13 |
 | Validation | Per-month LOYO error | G-7 |
 | Validation | Replace NRT with SP months and recheck October 2026 | G-5 |
+| Method | Drop detections on flagged gap days before scaling (about 10% overstatement in a few 2023-24 months; rebuild, recheck, republish) | G-28 |
+| Delivery | Make tied months rank the same way every rebuild (round before ranking) | G-29 |
 | Delivery | Web app changes, upload, Codespace-reproducible build | G-11, G-12 |
 
 ## 7. Change log (newest first)
+
+- 2026-11-15: Demo polish, no data or method change: Calendar out of the nav; Map picker hidden and labels say Argentina; `formatRatio` near class boundaries; Draw and README wording; gap-day note added to `HARMONIZATION_APPROACH.md` and `EXPLAIN_IT.md`; G-28 and G-29 moved to Future Scope.
+- 2026-11-15: Added `scripts/verify_app_data.py` (47 checks: raw recompute, internal consistency, events, boundaries, published figures; 47 PASS on local JSON and on the dev preview), `APP_READING_GUIDE.md` and `EXPLAIN_IT.md`. Found G-24 to G-32 (production serves old `main`; Map region filter; old Calendar markers; gap-day double count question; tie ranks; rounding display; two wording fixes). No data or method changed.
 
 - 2026-11-15: Docs updated: section 7 of `HARMONIZATION_APPROACH.md` now describes the live pages; October 2026 verdict added (section 8); `recommendation.md` marked superseded; in-sample anomaly figures removed outside the findings log.
 - 2026-11-15: Added four pages (`problem`, `regions`, `draw`, `accuracy`) with `mvp.js` and `mvp.css`; nav updated; Overview, Year and Briefing hidden. Existing pages: unit label "detections", "not ranked yet" for provisional months.
