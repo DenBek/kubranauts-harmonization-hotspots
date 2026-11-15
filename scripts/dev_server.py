@@ -27,6 +27,10 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass
 
+    def log_error(self, fmt, *args):
+        # Only errors are logged (404s especially), so a broken link shows up in the terminal.
+        print(f"{self.command} {self.path} -> " + (fmt % args), flush=True)
+
     def send_json(self, data, status=200):
         body = json.dumps(data, separators=(",", ":")).encode("utf-8")
         self.send_response(status)
@@ -49,9 +53,17 @@ class Handler(SimpleHTTPRequestHandler):
                     data["source"] = source
                     return self.send_json(data)
             return self.send_json({"source": "sample", "note": f"No file for {table}.", "rows": []}, 500)
+        # Cloudflare Pages serves /draw as draw.html; do the same here.
+        if "." not in path.rsplit("/", 1)[-1] and path.strip("/") and (WEB / (path.strip("/") + ".html")).exists():
+            query = self.path[len(path):]
+            self.path = path.rstrip("/") + ".html" + query
         return super().do_GET()
 
 
 if __name__ == "__main__":
+    # On Windows, address reuse lets a second copy bind the same port, and requests then alternate between the two
+    # (one may be an old copy). Fail loudly instead.
+    ThreadingHTTPServer.allow_reuse_address = False
+    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"web/ at http://localhost:{PORT}  (publish dir: {PUBLISH})", flush=True)
-    ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
+    server.serve_forever()

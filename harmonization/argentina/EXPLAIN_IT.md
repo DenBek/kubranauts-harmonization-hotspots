@@ -1,7 +1,7 @@
 # How to explain it: one-page cheat sheet (Argentina fire calendar)
 
 Plain-English notes for presenting to judges. Sources are in brackets; `verify` = `python scripts/verify_app_data.py`.
-Show the app from **https://dev.kubranauts-hotspots.pages.dev** (production still runs the old site; see `APP_READING_GUIDE.md`).
+Show the app at **https://kubranauts-hotspots.pages.dev** once `dev` is merged into `main`. Until then the new site is only at **https://dev.kubranauts-hotspots.pages.dev** and production still runs the old one (`SCOPE_AND_GAPS.md` G-24). The nav has four pages: The problem, Fire calendar, Draw an area, How accurate is it? Run `python scripts/verify_app_data.py` before presenting (47 checks).
 
 ## The 60-second story
 
@@ -25,7 +25,7 @@ are not compared. The calendar starts in 2003, not 2000.
 | # | Number | What it means | Source |
 |---|---|---|---|
 | 1 | **4.0 to 6.7** | VIIRS detections per Aqua detection, by calendar month (lowest July, highest February) | `gold_calibration`; `verify` raw |
-| 2 | **×3.7** | Raw record jump 2011 → 2012 (45,740 → 167,274), purely from the camera change | `verify` boundary |
+| 2 | **×3.7** | Raw record jump 2011 → 2012 (45,740 → 167,274 joined end to end; Suomi NPP alone counted 169,182 in all of 2012), purely from the camera change | `verify` boundary; `data/annual_counts.csv` |
 | 3 | **×0.83** | Harmonized 2011 → 2012 (224,264 → 185,087). Aqua alone fell 18% that year, so the drop is real | `verify`; `data/annual_counts.csv` |
 | 4 | **9.5%** | Typical (median) error of a converted month, whole country, unseen years 2020–2022 | `gold_accuracy` |
 | 5 | **19%** | 9 converted months in 10 were within this | `gold_accuracy` |

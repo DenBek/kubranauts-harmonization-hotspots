@@ -3,10 +3,15 @@
 For the team member who has to explain the app to judges. One section per page. Every number cites the file or check that
 reproduces it; `verify` = `python scripts/verify_app_data.py` (see the end of this file).
 
-**Which site?** The new pages are on the `dev` preview, **https://dev.kubranauts-hotspots.pages.dev**. The production address
-`kubranauts-hotspots.pages.dev` serves the `main` branch, which still has the old site: `/problem.html` there opens the old Map,
-and `/api/gold/gold_accuracy` returns "Unknown table." (checked 2026-11-15 with curl). Give judges the preview link until `dev`
-is merged into `main`.
+**The nav (final, 2026-11-15)** has four pages, in story order: **The problem**, **Fire calendar**, **Draw an area**,
+**How accurate is it?** The bare address opens The problem. The Map, Calendar, Overview, Year, Briefing and Words used pages are
+hidden from the nav (files kept, still reachable by address). There is no Region picker in the header: the Fire calendar page has
+its own region buttons.
+
+**Which site?** Before the merge, the new pages are only on the `dev` preview, **https://dev.kubranauts-hotspots.pages.dev**.
+The production address `kubranauts-hotspots.pages.dev` serves `main`, which still had the old site when last checked on
+2026-11-15 (`/api/gold/gold_accuracy` returned "Unknown table."). After `dev` is merged into `main`, production is the address to
+give judges (`SCOPE_AND_GAPS.md` G-24; steps in `HANDOVER.md`).
 
 ## Words used on every page
 
@@ -33,7 +38,7 @@ is merged into `main`.
 
 ---
 
-## 1. The Problem (`problem.html`)
+## 1. The problem (`problem.html`, nav 1, landing page)
 
 **What you see.** A bar chart, one bar per year, Argentina only. Switch "Raw, joined end to end" / "Harmonized" and "Year
 totals" / "Months" / "Cameras side by side". Three tiles at the top.
@@ -59,9 +64,9 @@ VIIRS about 4–7× higher.
   calendar month gave 9.5% (`findings_log.md` §5, method M0 vs M1).
 - *"Why start in 2003?"* Before mid-2002 only Terra flew; we did not build or test a Terra conversion (D-2).
 
-## 2. Regions (`regions.html`)
+## 2. Fire calendar (`regions.html`, nav 2)
 
-**What you see.** Region chips (Argentina, North-east, North-west, Centre, Patagonia, Paraná Delta), a baseline toggle, and a
+**What you see.** Region buttons (Argentina, North-east, North-west, Centre, Patagonia, Paraná Delta), a baseline toggle, and a
 month × year calendar: columns are years, rows are months.
 - Square colour = class against usual (blue quieter, ember busier). A vertical line marks "VIIRS measured from here" (2012).
 - **Hatched** square = converted from MODIS. **"!"** = caution, **"?"** = indicative only (small counts), faded fill too.
@@ -90,7 +95,7 @@ say "No estimate"; a rank on a provisional month.
 - *"Can I trust a hatched square in Patagonia?"* Only roughly: most Patagonian converted months are "indicative only" (67 of 109)
   because MODIS saw fewer than 50 detections there (`gold_region_monthly`, `reliability`).
 
-## 3. Draw an Area (`draw.html`)
+## 3. Draw an area (`draw.html`, nav 3)
 
 **What you see.** A map. Draw a rectangle or polygon, or type corners, or click an example. The app picks the 1° map cells
 (about 100 km) whose **centre** is inside your shape (highlighted squares), adds them up, and shows the same calendar, side panel
@@ -112,7 +117,7 @@ whole 1° cells, a bit larger than the 0.1° box. Small shapes get "indicative o
 - *"Why is my small area so uncertain before 2012?"* With under 50 MODIS detections the likely range is wider than −80%/+80%
   (`gold_reliability`); the information is not in the MODIS data. From 2012 the values are measured and reliable at any size.
 
-## 4. How Accurate Is This? (`accuracy.html`)
+## 4. How accurate is it? (`accuracy.html`, nav 4)
 
 **What you see.** Tiles with held-out accuracy figures, a scatter of converted against measured months, a table of likely
 range by the number of MODIS detections in the area-month, flag advice, and "works best / does not work" lists.
@@ -132,29 +137,21 @@ likely range −21% to +23%. Reliability bins: ≥5,000 reliable (−12/+25%) do
   2020–22, `findings_log.md` §5); eight fit years cannot pin that down. It is inside the likely range and is stated, not hidden.
 - *"Why only Argentina?"* That is the only place it was tested.
 
-## 5. Map (`index.html`, older page)
+## 5. Hidden pages (not in the nav, still reachable by address)
 
-**What you see.** Circles on 1° cells for one month; size and colour grow with the value; a timeline you can play; a cell list
-and cell detail; a box tool with CSV. Metric switch: Harmonized / MODIS (raw Aqua) / VIIRS (raw, empty before 2012).
+These were built for the earlier dummy-data app. They stay in the repo but are not part of the demo (D-23, D-28). Do not send judges
+to them.
 
-**Data.** `gold_cell_monthly`. Colour scale fixed across all months.
-
-**Caveats to know before a demo.** The region picker does not filter the map: every region shares `stratum_id = argentina`,
-so "Region total" for Paraná Delta is the whole-country total. The cell detail says the ratio is "for this biome and month";
-it is one factor per calendar month for the whole country. The "hotspots" fields show "–" or "not included" (trimmed, G-19).
-Converted and measured months look the same here. Prefer Draw an Area for local questions.
-
-## 6. Calendar (`calendar.html`, older page)
-
-**What you see.** A heat map (rows = years, columns = months), side panel with a bullet chart (dot = value, band = middle half
-of past years, line = usual), "same month across years" bars, and "by sensor" lines.
-
-**Data.** `gold_region_monthly`, default baseline only.
-
-**Caveats.** Converted months are not hatched, and there are no reliability flags. The one no-estimate month (Paraná Delta,
-June 2005) is painted in the "normal" colour with the label "Provisional, not compared yet". Help text says VIIRS is "empty
-before April 2018"; in this data VIIRS starts in February 2012 (Suomi NPP). Regions shows the same data with the honesty
-markers, so demo Regions instead.
+- **Map** (`map-old.html`; `index.html` now redirects to The problem). Circles on 1° cells, a timeline, a cell list and a box tool
+  with CSV (`gold_cell_monthly`). Converted and measured months look identical and there are no reliability flags. Its text now says
+  "Argentina total" and the header picker is hidden there. The "hotspots" fields still show "not included" (G-19). Use Draw an
+  area for local questions.
+- **Calendar** (`calendar.html`). A heat map and a by-sensor chart (`gold_region_monthly`). Converted months are not hatched, the
+  one no-estimate month (Paraná Delta, June 2005) is painted "normal", and the help text says VIIRS is "empty before April 2018"
+  (it starts in February 2012) (G-27). Fire calendar replaces it.
+- **Overview, Year, Briefing** depend on the analogs table (not produced) or on text-message copy (Twilio is not connected).
+- **Words used** (`glossary.html`). Rewritten 2026-11-15 from the "Words used on every page" list at the top of this guide, with no
+  dummy-app wording. Hidden from the nav; it can be linked again by adding one line to `PAGES` in `web/nav.js`.
 
 ---
 
@@ -182,5 +179,5 @@ Result on 2026-11-15: 47 PASS, 0 FAIL on the local JSON and on the live preview.
 one ratio on a provisional month) turned 7 checks to FAIL, so the checks do catch errors.
 
 Checks allow for rounding in the published JSON (values to 0.1, coverage to 0.001). Two rounding effects you may see in the app:
-a ratio of 0.4996 is shown "0.50×" but classed "much below"; and two months with identical values (Patagonia March 2010 and
+a ratio a hair under a class boundary now reads "just under 0.50×" (fixed 2026-11-15, G-30), and two months with identical values (Patagonia March 2010 and
 2011, both 185.4) can swap rank between rebuilds.

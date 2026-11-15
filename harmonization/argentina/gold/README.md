@@ -22,6 +22,20 @@ Months before 2003 are excluded on purpose (Terra only, plus the Aqua start-up).
 scaled by days ÷ valid days (`coverage` = valid fraction). The current month is not scaled to a full month: it is
 `is_complete = false` and has no anomaly.
 
+## Which page reads which table (final app, 2026-11-15)
+
+| Page (nav order) | File | Tables |
+|---|---|---|
+| The problem (also the landing page) | `web/problem.html` | `gold_region_monthly`, `gold_region_annual` |
+| Fire calendar | `web/regions.html` | `gold_region_monthly`, `gold_region_annual`, `gold_reliability` |
+| Draw an area | `web/draw.html` | `gold_cell_monthly`, `gold_reliability` |
+| How accurate is it? | `web/accuracy.html` | `gold_accuracy`, `gold_reliability` |
+| Hidden: Words used | `web/glossary.html` | `gold_region_headline` (only keeps the header data pill honest) |
+| Hidden: old Map | `web/map-old.html` | `gold_cell_monthly` |
+| Hidden: Calendar, Overview, Year, Briefing | `web/calendar.html`, `overview.html`, `year.html`, `briefing.html` | `gold_region_monthly`, `gold_region_annual`, `gold_region_headline`, `gold_region_analogs` (not produced) |
+
+`gold_calibration` is published but no page requests it. The Worker allowlist (`functions/api/gold/[table].js`) has all eight names.
+
 ## Regions (`region_id`)
 
 | id | name | definition (0.1° cell lower-left corner) |
@@ -38,7 +52,7 @@ NE/NW/C/S partition the country and are the zones the method was validated on. T
 
 ## Tables
 
-### `gold_cell_monthly` (map). 1° cell × month, 54,760 rows, JSON 15.1 MB (0.55 MB gzipped)
+### `gold_cell_monthly` (Draw an area; also the hidden old Map). 1° cell × month, 54,760 rows, JSON 15.1 MB (0.55 MB gzipped)
 App columns: `cell_id` (int, from the 1° indices), `cell_x`/`cell_y` (1° floor indices of lon/lat), `lon_center`,
 `lat_center`, `year`, `month`, `month_start`, `harmonized_cell_days` (harmonized count), `modis_cell_days` = `modis_hotspots`
 (raw Aqua count), `viirs_cell_days` = `viirs_hotspots` (raw count of the VIIRS reference satellite; null before 2012),
@@ -51,7 +65,7 @@ Only cells with at least one detection are present. A missing cell-month means z
 Same values at full resolution (`lat10`, `lon10` = floor of lat×10, lon×10), for fast polygon sums on the server.
 The cells sum exactly to the country month.
 
-### `gold_region_monthly` (calendar). Region × month, 2003-01 → current, 1,722 rows, 1.55 MB JSON
+### `gold_region_monthly` (Fire calendar and The problem). Region × month, 2003-01 → current, 1,722 rows, 1.55 MB JSON
 App columns as in the sample. `harmonized_cell_days` is the harmonized count. `modis_cell_days` is the raw Aqua count.
 `viirs_cell_days` is the raw VIIRS reference count. `baseline_*` (median, mean, p25, p75, min, max) and `anomaly_*` use the
 **default baseline** (`baseline_id = harmonized_2003_2022`: the same calendar month, complete months, 2003–2022).
@@ -108,8 +122,8 @@ are on held-out years and each row carries its `test_period`. Earlier agreement 
 `findings_log.md` §3 and are not in this table.
 
 ### `gold_region_analogs`. Not produced
-Analog years are not part of the validated method. The app keeps its sample file for this table, which matches no new
-region id, so the analog panels show "–" or "No analog years".
+Analog years are not part of the validated method. The Worker keeps its sample file for this table, which matches no new
+region id. Only hidden pages (Overview, Year, Briefing) use it; no visible page requests it.
 
 ## Rebuild and publish
 
@@ -119,6 +133,8 @@ cd harmonization/argentina
 python ../../scripts/export_calendar.py --local gold         # optional: writes gold/publish/*.json to check sizes
 ../../venv/Scripts/python.exe -u 14_build_gold.py --upload   # copies gold/*.parquet to r2://firms-data/gold/
 python scripts/export_calendar.py                            # (repo root, Codespace) publishes JSON to R2
+python scripts/export_calendar.py --via-duckdb               # same, if boto3 fails with CERTIFICATE_VERIFY_FAILED (D-25)
+python scripts/verify_app_data.py                            # then check the result: 47 checks
 ```
 
 `14_build_gold.py` reads the local `data/argentina.duckdb` (gitignored). In a fresh Codespace, rebuild it first with

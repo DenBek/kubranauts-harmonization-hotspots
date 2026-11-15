@@ -228,6 +228,8 @@
     document.getElementById("tool-poly").setAttribute("aria-pressed", String(mode === "poly"));
     document.getElementById("tool-finish").hidden = mode !== "poly";
     map.getContainer().style.cursor = mode ? "crosshair" : "";
+    // Dragging must be off before the press, not inside the mousedown handler: Leaflet has already started panning by then.
+    if (mode === "rect") map.dragging.disable(); else map.dragging.enable();
     if (mode !== "poly") resetPoly();
     document.getElementById("tool-help").textContent = mode === "rect" ? "Press on the map and drag to draw a rectangle."
       : mode === "poly" ? "Click each corner on the map, then press Finish polygon (or double-click)." : "Choose a tool, then drag on the map (rectangle) or click corners and press Finish (polygon).";
@@ -242,7 +244,6 @@
     map.on("mousedown", function (e) {
       if (mode !== "rect") return;
       start = e.latlng;
-      map.dragging.disable();
       ghost = L.rectangle([start, start], { color: cssVar("--accent"), weight: 2, dashArray: "6 4", fillOpacity: 0.05 }).addTo(map);
     });
     map.on("mousemove", function (e) { if (ghost && start) ghost.setBounds([start, e.latlng]); });
@@ -250,7 +251,6 @@
       if (!ghost || !start) return;
       ghost.remove(); ghost = null;
       var s = start; start = null;
-      map.dragging.enable();
       if (Math.abs(s.lat - e.latlng.lat) < 0.02 && Math.abs(s.lng - e.latlng.lng) < 0.02) return;
       setShape(rectShape(s.lat, e.latlng.lat, s.lng, e.latlng.lng));
       setTool(null);

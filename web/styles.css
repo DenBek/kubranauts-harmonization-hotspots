@@ -1024,7 +1024,8 @@ dl.metric.compact .metric-help { display: none; }
 .coords input { width: 100%; min-height: 36px; }
 .area-summary { padding: 0.7rem; border-radius: var(--radius-sm); background: var(--accent-soft); }
 
-.leaflet-container { font: inherit; background: var(--surface-2); }
+/* isolation: keep Leaflet's z-indexes (controls use 1000) inside the map so they cannot draw over the sticky header. */
+.leaflet-container { font: inherit; background: var(--surface-2); isolation: isolate; }
 .leaflet-control-attribution { font-size: 10px; }
 .leaflet-tooltip.cell-tip {
   padding: 0.4rem 0.55rem;

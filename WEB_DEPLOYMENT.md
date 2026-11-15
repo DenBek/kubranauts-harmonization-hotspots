@@ -2,7 +2,7 @@
 
 The fire calendar is a static site on Cloudflare Pages. The pages are HTML, CSS, and JavaScript in `web/`. API routes live in `functions/` and are served from the same address as the pages. Those routes are Pages Functions, which run as Workers. There is no separate Worker project.
 
-The site can be clicked through on sample data before any Cloudflare setup. Live gold tables are plugged in later by writing JSON into R2. A page changes dataset when its own file is published. Other pages can still be on the sample.
+The site can be clicked through on sample data before any Cloudflare setup. (Historical: the Argentina data is now published; the sample is only a fallback.) Live gold tables are plugged in later by writing JSON into R2. A page changes dataset when its own file is published. Other pages can still be on the sample.
 
 ## Stack
 
@@ -29,17 +29,20 @@ No Cloudflare login is required. With no R2 credentials, each API route returns 
 
 ## Pages
 
-| Page | What it shows |
-|---|---|
-| `web/index.html` | Home page: the map. Cells from `gold_cell_monthly` with a play-through timeline, cell history, and an area box (drawn, current view, or typed corners) with CSV export |
-| `web/overview.html` | Headline, five indicators, season against the usual year, last 12 months, both regions |
-| `web/map.html` | Old address of the map. Forwards to the home page and keeps `?region=&year=&month=` |
-| `web/calendar.html` | Month-by-year anomaly calendar from `gold_region_monthly`, keyboard navigable, with the month across years and the year by sensor |
-| `web/year.html` | Annual bars, season strip, analogs with running totals, and calibration ratios |
-| `web/briefing.html` | SMS preview on a phone, with character and segment count. Twilio is not connected |
-| `web/glossary.html` | Definitions of the units and comparisons, with live search |
+Final nav (2026-11-15), in this order. The bare address opens The problem.
 
-The region picker lives in the header and is shared by every page (`?region=` in the URL, remembered in the browser). Selections are in the URL too (`?year=&month=&metric=&cell=`), so a link opens the same view.
+| Nav | Page | What it shows |
+|---|---|---|
+| 1 | `web/problem.html` | The problem: raw counts joined end to end against the harmonized series, with year, month and by-camera views |
+| 2 | `web/regions.html` | Fire calendar: month-by-year calendar for Argentina and five regions, with region buttons, baseline toggle, flags and likely ranges |
+| 3 | `web/draw.html` | Draw an area: sums the 1° map cells inside a rectangle or polygon you draw, with the same calendar and flags |
+| 4 | `web/accuracy.html` | How accurate is it?: held-out test results and the reliability table |
+
+Hidden from the nav (files kept, reachable by address): `web/map-old.html` (the old map; `web/index.html` now only redirects to
+`problem.html` and `web/map.html` forwards to `map-old.html`), `calendar.html`, `overview.html`, `year.html`, `briefing.html` and
+`glossary.html` ("Words used"). Which page reads which table: `harmonization/argentina/gold/README.md`.
+
+There is no region picker in the header. Fire calendar has its own region buttons (`?region=` in the URL, remembered in the browser).
 
 A new page is a new HTML file that links `styles.css` and then loads `gold.js`, `charts.js`, and `nav.js` in that order, plus one entry in `PAGES` in `web/nav.js`. Pages listen for the `regionchange` event instead of owning a region select.
 
@@ -55,6 +58,8 @@ Allowed tables:
 - `gold_region_analogs`
 - `gold_region_headline`
 - `gold_calibration`
+- `gold_reliability`
+- `gold_accuracy`
 
 The Worker reads `publish/<table>.json` through the R2 binding named `FIRMS`. If that object is missing, it returns `web/sample/<table>.json` and sets `source` to `sample`. Responses send `cache-control: no-store`.
 
@@ -72,7 +77,10 @@ The pages never open Parquet and never see R2 keys. `scripts/export_calendar.py`
 | `gold/gold_region_analogs.parquet` | `publish/gold_region_analogs.json` |
 | `gold/gold_region_headline.parquet` | `publish/gold_region_headline.json` |
 | `gold/gold_calibration.parquet` | `publish/gold_calibration.json` |
+| `gold/gold_reliability.parquet` | `publish/gold_reliability.json` |
+| `gold/gold_accuracy.parquet` | `publish/gold_accuracy.json` |
 
+In the Argentina MVP all of these except `gold_region_analogs` are published (2026-11-15). Nothing visible reads the sample files now. If a table is missing from R2, the Worker falls back to `web/sample/`, which has no `gold_reliability` or `gold_accuracy` file, so those two return an error instead.
 When a file exists:
 
 1. Write the Parquet to that key from the Codespace.
@@ -80,7 +88,7 @@ When a file exists:
 3. Run `python scripts/export_calendar.py` in the Codespace. It uses `R2_KEY_ID`, `R2_SECRET`, and `CF_ACCOUNT_ID` from the Codespaces secrets.
 4. Reload the site. A table that was written leaves the sample. A table that was skipped stays on the sample, and its banner says so.
 
-The cell export is limited to strata `chaco` and `cerrado` (`DEMO_STRATA` in the script) so the map does not download a global grid. Clear that tuple only when the JSON is still small enough for a browser.
+The cell export is limited to the stratum `argentina` (`DEMO_STRATA` in the script) so the map does not download a global grid. Clear that tuple only when the JSON is still small enough for a browser.
 
 `python scripts/build_sample_gold.py` rewrites the illustrative files in `web/sample/`. It does not upload anything. Regenerate rather than hand-editing one file, because the cell sums, the region months, the annual totals, and the headline are built together.
 
@@ -105,8 +113,8 @@ Each page requests only the tables it draws.
 
 ## Deploy
 
-1. Click through locally with `npx wrangler pages dev web`.
-2. Commit and push to `main`.
+1. Click through locally with `python scripts/dev_server.py` (real published data) or `npx wrangler pages dev web`.
+2. Team flow used so far: commit and push to `dev`, test the preview at `https://dev.kubranauts-hotspots.pages.dev`, then merge `dev` into `main`. See `HANDOVER.md` section 6 for the full checklist. (The first-time setup below pushes to `main`.)
 3. In the Cloudflare account that owns `firms-data`: Workers & Pages → Create → Pages → Connect to Git. Production branch `main`. Project name `kubranauts-hotspots`. If that name is taken, add a short suffix and tell the team the address.
 4. Framework None. Build command empty. Output directory `web`. Root directory the repository root. A root of `web/` hides `functions/` and the API returns 404.
 5. Settings → Bindings → R2. Variable name `FIRMS`, bucket `firms-data`, on Production and on Preview. Leave the bucket private. Do not paste the R2 keys.

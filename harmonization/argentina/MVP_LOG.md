@@ -1,5 +1,7 @@
 # MVP log: Argentina harmonized fire calendar data product
 
+> **Historical build log (2026-11-14), status updated 2026-11-15.** The front-end items and blockers below have since been done; each now carries its status. Current state: [SCOPE_AND_GAPS.md](SCOPE_AND_GAPS.md). Authoritative schema: [gold/README.md](gold/README.md).
+
 Task: [../docs/new_prompt.md](../docs/new_prompt.md). Method as settled in [recommendation.md](recommendation.md) (M1, counts,
 D+N, calendar-month factor, fit 2012–2019). No new modelling. Schema for the app: [gold/README.md](gold/README.md).
 Scope: [SCOPE_AND_GAPS.md](SCOPE_AND_GAPS.md).
@@ -75,7 +77,10 @@ error improves while the p90 and annual errors get worse. **The default stays da
 - **Baselines:** default = harmonized 2003–2022 (complete months); alternative = observed VIIRS 2012–2025.
 - **Cell resolution:** 1° for the browser.
 
-## Front-end changes needed (not done; the app was not touched)
+## Front-end changes needed (status as of 2026-11-15)
+
+Status by item: 1 done on visible pages (hidden pages may still say cell-days; unverified); 2 done; 3 done; 4 done (`web/mvp.js`); 5 done (Fire calendar toggle); 6 done (`web/accuracy.html`); 7 done (`web/draw.html`); 8 done (`anomaly_status`); 9 not done, Map page hidden (G-19); 10 done by hiding the pages that show analogs; 11 not done, Year page hidden (G-27).
+
 1. **Units:** replace "cell-days" with "fire detections (VIIRS-equivalent)" everywhere. It appears in `map.js`,
    `calendar.js`, `overview.js`/`.html`, `year.js`/`.html`, `glossary.html` (the `harmonized-cell-days` entry and the unit
    text) and `briefing.js` text. Later, rename the columns to `*_count` in the build, the export list and the JS together.
@@ -99,7 +104,9 @@ error improves while the p90 and annual errors get worse. **The default stays da
 11. **Text:** `year.js` calibration text ("stratum", "cell-days", "MAPE") needs rewording.
     `gold_region_annual.rank` is null for 2026.
 
-## Blockers for the app
+## Blockers for the app (status 2026-11-15: blocker 1 resolved, blocker 2 still open as G-12)
+
+**Blocker 1 resolved 2026-11-15:** the Parquet files and JSON are published to R2 (via DuckDB, D-25), with `REGIONS` and the allowlist changed first. Blocker 2 is still true.
 1. **Not published.** The Parquet files are only on this machine. A `.env` with R2 credentials exists, but I did not
    upload, because publishing switches the live site off the sample, and with the current `REGIONS` the live pages would
    go empty (change 2). Order: change `REGIONS` (and the allowlist), then run `14_build_gold.py --upload`, then
@@ -108,7 +115,7 @@ error improves while the p90 and annual errors get worse. **The default stays da
    someone uploads from this machine.
 
 ## Small issues (do not change the picture)
-- Annual totals count `insufficient_data` months as 0 (Patagonia and Delta only).
+- Annual totals count `insufficient_data` months as 0 (Patagonia and Delta only). **Resolved 2026-11-15 (D-22):** such years are partial, with no rank or anomaly.
 - The 1° cell sums differ from the region totals by ≤ 2 detections (rounding).
 - `holdout_mape` rests on 3 months per calendar month.
 - `14_build_gold_stdout.txt` in `data/` duplicates `14_build_gold.txt` and can be deleted.

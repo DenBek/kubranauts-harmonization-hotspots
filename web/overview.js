@@ -58,7 +58,7 @@ function render() {
   var deep = when ? query + "&year=" + when.year + "&month=" + when.month : query;
   document.getElementById("link-calendar").href = "calendar.html" + deep;
   document.getElementById("link-calendar-2").href = "calendar.html" + deep;
-  document.getElementById("link-map").href = "index.html" + query;
+  document.getElementById("link-map").href = "map-old.html" + query;
   document.getElementById("link-year").href = "year.html" + query + (when ? "&year=" + when.year : "");
   document.getElementById("link-briefing").href = "briefing.html" + deep;
 }

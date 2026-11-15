@@ -283,7 +283,7 @@ function renderDetail(row) {
 
   var q = "?region=" + encodeURIComponent(row.region_id) + "&year=" + row.year + "&month=" + row.month;
   panel.appendChild(el("div", { class: "hero-actions" }, [
-    el("a", { class: "btn small secondary", href: "index.html" + q, html: icon("map", 16) + "Show on the map" }),
+    el("a", { class: "btn small secondary", href: "map-old.html" + q, html: icon("map", 16) + "Show on the map" }),
     el("a", { class: "btn small secondary", href: "briefing.html" + q, html: icon("send", 16) + "Text briefing" }),
   ]));
 }
