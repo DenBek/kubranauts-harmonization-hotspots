@@ -15,21 +15,35 @@
   var TIMEOUT_MS = 30000;
   // Pool of suggested questions. Anything the visitor has already asked is left out, and the next ones move up.
   var POOL = [
-    "Was September 2020 unusual in Argentina, and can I trust it?",
+    // first six are what a new visitor sees: the problem, trust, the wow month, honesty about provisional data, grounding
     "Why do we need to harmonize MODIS and VIIRS?",
-    "When was the busiest month in the Paraná Delta?",
+    "Was September 2020 unusual in Argentina, and can I trust it?",
     "How accurate is it?",
+    "When was the busiest month in the Paraná Delta?",
     "Is October 2026 a record low?",
-    "What does the hatched square mean?",
-    "What happened in the north-east in January 2022?",
+    "Is it checked against the ground?",
+    // then depth: limits, method, known events
     "What can I not conclude from this?",
-    "How did 2020 compare as a year for the whole country?",
+    "Is it as accurate for a single region as for the whole country?",
     "What does \"likely range\" mean?",
-    "Which were the busiest months in Patagonia?",
-    "Why can I not trust small areas before 2012?",
     "How does the conversion work?",
+    "What happened in the north-east in January 2022?",
+    "Why use a simple ratio and not machine learning?",
+    "What does the hatched square mean?",
+    "Was 2012 a real drop in fires?",
+    "How did 2020 compare as a year for the whole country?",
+    "Why does the Paraná Delta show \"more than 10×\"?",
+    "Why can I not trust small areas before 2012?",
+    "Why one factor per calendar month?",
+    "Which were the busiest months in Patagonia?",
+    "Why does the conversion run about 7% low?",
+    "Can I use this to say fires are increasing?",
     "Why does the calendar start in 2003?",
+    "Is the switch from Suomi NPP to NOAA-20 a seam?",
+    "Why count detections and not fire radiative power?",
+    "Does this work outside Argentina?",
   ];
+
   var GREETING = "Hi! Ask me about a month, a year or a region and I will look it up in the same data the calendar uses, and tell you how far to trust it. I can also explain how MODIS and VIIRS counts were joined into one record. I only know Argentina.";
 
   // ---------- conversation store (shared by every panel on the page) ----------
@@ -147,10 +161,20 @@
   // ---------- safe text rendering: paragraphs, "-" lists, **bold**, `code` ----------
 
   function inline(parent, text) {
-    text.split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/).forEach(function (part) {
+    // [label](page.html) becomes a link only for this site's own pages (same-folder .html, optional simple query)
+    text.split(/(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\s]+\))/).forEach(function (part) {
       if (!part) return;
       var node;
-      if (part.length > 4 && part.slice(0, 2) === "**" && part.slice(-2) === "**") {
+      var link = /^\[([^\]\n]+)\]\(([^)\s]+)\)$/.exec(part);
+      if (link) {
+        if (/^[a-z_]+\.html(\?[A-Za-z0-9_=&]+)?$/.test(link[2])) {
+          node = document.createElement("a");
+          node.href = link[2];
+          node.textContent = link[1];
+        } else {
+          node = document.createTextNode(link[1]);   // anything else (external or odd) shows as plain text
+        }
+      } else if (part.length > 4 && part.slice(0, 2) === "**" && part.slice(-2) === "**") {
         node = document.createElement("strong");
         node.textContent = part.slice(2, -2);
       } else if (part.length > 2 && part.charAt(0) === "`" && part.slice(-1) === "`") {
