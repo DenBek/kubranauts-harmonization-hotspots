@@ -58,12 +58,26 @@ function liveConfig(env) {
   return env.TWILIO_LIVE === "true" && !!env.TWILIO_ACCOUNT_SID && !!env.TWILIO_AUTH_TOKEN && !!env.TWILIO_FROM && recipients(env).length > 0;
 }
 
+// Setup check: which settings this deployment can see (true/false only, never a value), so a missing or misspelled
+// secret shows up without opening the dashboard.
+var SETTINGS = ["TWILIO_LIVE", "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM", "TWILIO_RECIPIENTS"];
+
 export async function onRequestGet(context) {
   var env = context.env || {};
+  var seen = {};
+  SETTINGS.forEach(function (k) { seen[k] = !!(env[k] && String(env[k]).trim()); });
+  var notes = [];
+  if (seen.TWILIO_LIVE && env.TWILIO_LIVE !== "true") notes.push("TWILIO_LIVE is set but is not exactly: true");
+  if (seen.TWILIO_ACCOUNT_SID && !/^AC[0-9a-fA-F]{32}$/.test(String(env.TWILIO_ACCOUNT_SID).trim())) notes.push("TWILIO_ACCOUNT_SID should be AC followed by 32 letters and digits");
+  if (seen.TWILIO_FROM && !normalizeNumber(env.TWILIO_FROM)) notes.push("TWILIO_FROM should look like +12125550123");
+  if (seen.TWILIO_RECIPIENTS && !recipients(env).length) notes.push("TWILIO_RECIPIENTS has no valid Name=+1... entry");
+  if (!SETTINGS.some(function (k) { return seen[k]; })) notes.push("This deployment sees none of the settings: add them as Secrets on this environment (Preview for dev), then retry the deployment");
   return json({
     live: liveConfig(env),
     recipients: recipients(env).map(function (r) { return r.name; }),
     channels: CHANNELS,
+    settings: seen,
+    notes: notes,
   });
 }
 
@@ -106,7 +120,7 @@ export async function onRequestPost(context) {
   if (channel === "call") {
     endpoint = "Calls.json";
     form.set("To", who.number);
-    form.set("From", env.TWILIO_FROM);
+    form.set("From", normalizeNumber(env.TWILIO_FROM) || env.TWILIO_FROM);
     form.set("Twiml", twimlFor(sms));
   } else {
     endpoint = "Messages.json";
@@ -116,7 +130,7 @@ export async function onRequestPost(context) {
       form.set("From", "whatsapp:" + (normalizeNumber(env.TWILIO_WHATSAPP_FROM) || WHATSAPP_SANDBOX));
     } else {
       form.set("To", who.number);
-      form.set("From", env.TWILIO_FROM);
+      form.set("From", normalizeNumber(env.TWILIO_FROM) || env.TWILIO_FROM);
     }
     form.set("Body", text);
   }
