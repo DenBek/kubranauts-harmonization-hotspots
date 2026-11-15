@@ -18,26 +18,36 @@ skipped, and the website keeps serving the sample for that table.
 gold_cell_monthly is limited to DEMO_STRATA so the map does not download a
 global grid. Clear that tuple only if the resulting JSON is still small
 enough for a browser.
+
+Argentina MVP (harmonization/argentina/14_build_gold.py): columns named
+*_cell_days hold VIIRS-equivalent detection COUNTS in this version.
+
+Local mode (no R2, no secrets): read <dir>/<table>.parquet and write
+<dir>/publish/<table>.json, to check the output and its size:
+
+    python scripts/export_calendar.py --local harmonization/argentina/gold
 """
 
 import json
 import os
+import sys
 from datetime import date, datetime
+from decimal import Decimal
+from pathlib import Path
 
-import boto3
 import duckdb
 
 BUCKET = "firms-data"
 
-# Cell map slice. These stratum ids match the sample regions.
-DEMO_STRATA = ("chaco", "cerrado")
+# Cell map slice. "argentina" is the stratum of the Argentina MVP cells.
+DEMO_STRATA = ("argentina",)
 
 TABLES = {
     "gold_cell_monthly": [
-        "cell_id", "cell_x", "cell_y", "lon_center", "lat_center", "year", "month",
-        "month_start", "modis_hotspots", "modis_cell_days", "viirs_hotspots",
-        "viirs_cell_days", "stratum_id", "calibration_ratio", "harmonized_cell_days",
-        "source", "is_provisional",
+        # Trimmed for size: cell_x, cell_y, month_start and the *_hotspots duplicates stay in the Parquet only.
+        "cell_id", "lon_center", "lat_center", "year", "month",
+        "modis_cell_days", "viirs_cell_days", "stratum_id", "calibration_ratio",
+        "harmonized_cell_days", "source", "is_provisional", "method",
     ],
     "gold_region_monthly": [
         "region_id", "year", "month", "month_start", "harmonized_cell_days",
@@ -45,12 +55,17 @@ TABLES = {
         "baseline_median", "baseline_mean", "baseline_p25", "baseline_p75",
         "baseline_min", "baseline_max", "anomaly_ratio", "anomaly_diff", "anomaly_class",
         "percentile_rank", "rank_in_month", "n_years_ranked",
+        "method", "coverage", "reliability", "harmonized_low", "harmonized_high",
+        "likely_low_pct", "likely_high_pct", "anomaly_class_stable", "raw_satellite",
+        "baseline_id", "baseline_n_years", "baseline_viirs_median", "baseline_viirs_mean",
+        "baseline_viirs_n_years", "anomaly_ratio_viirs", "anomaly_class_viirs",
     ],
     "gold_region_annual": [
         "region_id", "year", "harmonized_cell_days", "rank", "n_years_ranked",
         "anomaly_ratio", "peak_month", "peak_month_cell_days", "season_start_month",
         "season_midpoint_month", "season_end_month", "season_length_months",
         "months_available", "is_complete",
+        "method", "harmonized_low", "harmonized_high", "months_insufficient",
     ],
     "gold_region_analogs": [
         "region_id", "target_year", "through_month", "analog_year", "rank", "distance",
@@ -60,10 +75,20 @@ TABLES = {
     "gold_region_headline": [
         "region_id", "as_of_month", "headline", "alt_text", "month_anomaly_ratio",
         "month_rank_in_month", "ytd_cell_days", "ytd_vs_median", "top_analog_year",
+        "method", "region_name",
     ],
     "gold_calibration": [
         "stratum_id", "month", "ratio", "modis_cell_days_fit", "viirs_cell_days_fit",
         "n_months", "fit_start", "fit_end", "holdout_mape", "viirs_sensor", "method_version",
+        "factor_rel_sd", "holdout_years", "modis_satellite", "likely_low_pct", "likely_high_pct",
+    ],
+    # New in the Argentina MVP. The API allowlist in functions/api/gold/[table].js must add these two.
+    "gold_reliability": [
+        "size_bin", "aqua_min", "aqua_max_excl", "n_area_months", "likely_low_pct", "likely_high_pct",
+        "range80_low_pct", "range80_high_pct", "reliability", "suggestion", "applies_to",
+    ],
+    "gold_accuracy": [
+        "metric", "value", "unit", "statement", "test_period", "source", "method_version", "computed_at",
     ],
 }
 
@@ -79,6 +104,8 @@ def require_env():
 
 
 def client():
+    import boto3
+
     return boto3.client(
         "s3",
         endpoint_url=f"https://{os.environ['CF_ACCOUNT_ID']}.r2.cloudflarestorage.com",
@@ -108,6 +135,8 @@ def connect():
 
 
 def encode(value):
+    if isinstance(value, Decimal):
+        value = float(value)
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     if isinstance(value, float):
@@ -115,17 +144,25 @@ def encode(value):
     return value
 
 
-def publish_one(con, s3, table, columns):
+def publish_one(con, s3, table, columns, local_dir=None):
     key = f"gold/{table}.parquet"
-    if not exists(s3, key):
-        print(f"Skip {table}: {key} is not in the bucket. The site keeps the sample.")
-        return
+    if local_dir is not None:
+        path = Path(local_dir) / f"{table}.parquet"
+        if not path.exists():
+            print(f"Skip {table}: {path} does not exist.")
+            return
+        location = path.as_posix()
+    else:
+        if not exists(s3, key):
+            print(f"Skip {table}: {key} is not in the bucket. The site keeps the sample.")
+            return
+        location = f"r2://{BUCKET}/{key}"
     selected = ", ".join(columns)
     where = ""
     if table == "gold_cell_monthly" and DEMO_STRATA:
         listed = ", ".join("'" + name.replace("'", "") + "'" for name in DEMO_STRATA)
         where = f" WHERE stratum_id IN ({listed})"
-    sql = f"SELECT {selected} FROM read_parquet('r2://{BUCKET}/{key}'){where}"
+    sql = f"SELECT {selected} FROM read_parquet('{location}'){where}"
     try:
         cursor = con.sql(sql)
         names = [item[0] for item in cursor.description]
@@ -143,7 +180,13 @@ def publish_one(con, s3, table, columns):
         "note": f"Published from {key}.",
         "rows": rows,
     }
-    body = json.dumps(payload).encode("utf-8")
+    body = json.dumps(payload, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    if local_dir is not None:
+        out = Path(local_dir) / "publish" / f"{table}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(body)
+        print(f"Wrote {len(rows)} rows to {out} ({len(body) / 1e6:.2f} MB)")
+        return
     s3.put_object(
         Bucket=BUCKET,
         Key=f"publish/{table}.json",
@@ -154,6 +197,12 @@ def publish_one(con, s3, table, columns):
 
 
 def main():
+    if "--local" in sys.argv:
+        local_dir = sys.argv[sys.argv.index("--local") + 1]
+        con = duckdb.connect()
+        for table, columns in TABLES.items():
+            publish_one(con, None, table, columns, local_dir=local_dir)
+        return
     require_env()
     s3 = client()
     con = connect()

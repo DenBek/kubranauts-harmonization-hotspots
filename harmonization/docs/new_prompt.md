@@ -9,13 +9,37 @@ is MVP only: build the data files the app will read, run two quick checks, and s
 Do not redesign the method. Do not spend time on small issues that do not change the
 picture; list them in one line at the end.
 
-## Step 0: look at the existing app first (short)
-Before building anything, inspect the existing HTML app and report how it expects to
-receive data (file format, column names, any sample data, whether it loads Parquet,
-JSON or CSV, in the browser or from an API). Adapt the output formats below to what
-the app can actually read. If the app has no data layer yet, propose the simplest
-format (small JSON/CSV/Parquet files loadable in the browser) and say so. Do not
-modify the app unless it is trivial; list any changes needed instead.
+## Step 0 (revised): read the existing app contract first
+The web app already exists (static site on Cloudflare Pages, JSON served from R2 via a
+Worker). Treat the app's table names and column schema as the TARGET. Inspect:
+- `web/sample/*.json` and the header of `scripts/export_calendar.py` for the exact
+  columns of: gold_cell_monthly, gold_region_monthly, gold_region_annual,
+  gold_region_analogs, gold_region_headline, gold_calibration.
+- `scripts/build_sample_gold.py` to see how the tables are meant to agree.
+Then report, in one short table, how each of our deliverables maps onto those six
+tables, and which columns have no equivalent in our method (and vice versa).
+
+### Adaptations required (settled)
+- **Unit:** the app currently says "harmonized cell-days". Our validated unit is
+  **harmonized detection counts (VIIRS-equivalent)**. Produce counts; list the label
+  and text changes the front end needs (do not restyle the app).
+- **Regions:** the sample uses `chaco` and `cerrado` strata. For the MVP, "region"
+  means Argentina plus a small set of named sub-areas (suggest 4-6: for example whole
+  country, Chaco, Pampas/Delta, Mesopotamia/Corrientes, Cordoba, Patagonia). Use simple
+  bounding boxes or province polygons. Do not use the old strata.
+- **Size limit:** JSON must stay browser-sized. If 0.1-degree cells x months x years is
+  too large, aggregate the cell table to 0.25 degrees, or export only active cells, and
+  report the file sizes. Do not drop the calendar years.
+- **Missing fields:** the app has `gold_calibration`, `gold_region_analogs` and
+  ranks (`n_years_ranked`). Map our KPI file and reliability lookup into
+  `gold_calibration` where possible. If a field cannot be produced honestly from our
+  method (for example analogs), leave it out and say so; do not invent values.
+- **Output path:** write Parquet to `gold/<table>.parquet` with the app's column names,
+  then run the existing export script to produce `publish/<table>.json`. Never put
+  keys in the front end.
+- **Honesty fields the app lacks:** add `method` (observed_viirs / modelled_aqua /
+  provisional_nrt), `coverage`, and a `reliability` flag with a likely-range low/high to
+  the relevant tables, and list the front-end changes needed to show them.
 
 ## Settled findings (use as given; do not re-investigate)
 - Harmonize **detection counts, day+night, per month**, in VIIRS-equivalent units.

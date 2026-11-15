@@ -1,3 +1,4 @@
 data/extract/
 data/*.duckdb
 data/global_daily.parquet
+gold/publish/
