@@ -29,18 +29,20 @@ No Cloudflare login is required. With no R2 credentials, each API route returns 
 
 ## Pages
 
-Final nav (2026-11-15), in this order. The bare address opens The problem.
+Nav, in this order. The bare address opens the map (`web/index.html`, script `web/home.js`).
 
 | Nav | Page | What it shows |
 |---|---|---|
-| 1 | `web/problem.html` | The problem: raw counts joined end to end against the harmonized series, with year, month and by-camera views |
-| 2 | `web/regions.html` | Fire calendar: month-by-year calendar for Argentina and five regions, with region buttons, baseline toggle, flags and likely ranges |
-| 3 | `web/draw.html` | Draw an area: sums the 1° map cells inside a rectangle or polygon you draw, with the same calendar and flags |
-| 4 | `web/accuracy.html` | How accurate is it?: held-out test results and the reliability table |
+| 1 | `web/index.html` (Map) | Split layout: a one-sentence answer on top ("2.3× the usual August, busiest in 23 years"), the map with the timeline under it, and a side column that always shows the calendar for the current selection (Argentina, a region, or a drawn area) with detail, stats, series and CSV. Each 1° cell is a circle: area = detections, colour = that month against the same place's usual month (median 2003–2022), in the calendar's colours; provisional months are hollow. The map opens fitted to Argentina, with grey tiles and everything outside Argentina faded (`web/argentina.json`, Natural Earth 1:50m). Three modes: **Explore months** (play, Harmonized / MODIS Aqua / VIIRS, cell history), **Regions** (Argentina and the five boxes, known events) and **Draw an area** (rectangle, polygon, examples, typed corners, year range). Calendar, timeline and headline move together. URL: `?mode=explore\|region\|draw&region=&rect=s,n,w,e&year=&month=&metric=&cell=` |
+| 2 | `web/problem.html` | The problem: raw counts joined end to end against the harmonized series, with year, month and by-camera views |
+| 3 | `web/regions.html` | Fire calendar: month-by-year calendar for Argentina and five regions, with region buttons, baseline toggle, flags and likely ranges |
+| 4 | `web/index.html?mode=draw` | Draw an area, on the map. `web/draw.html` forwards there and keeps `?rect=` |
+| 5 | `web/accuracy.html` | How accurate is it?: held-out test results and the reliability table |
+| 6 | `web/glossary.html` | Words used |
 
-Hidden from the nav (files kept, reachable by address): `web/map-old.html` (the old map; `web/index.html` now only redirects to
-`problem.html` and `web/map.html` forwards to `map-old.html`), `calendar.html`, `overview.html`, `year.html`, `briefing.html` and
-`glossary.html` ("Words used"). Which page reads which table: `harmonization/argentina/gold/README.md`.
+The area sums on the map use the same logic as the former `web/draw.js` (kept in the repo), so the numbers match. `web/map.html`
+forwards to the map. Hidden from the nav (files kept, reachable by address): `web/map-old.html`, `calendar.html`, `overview.html`,
+`year.html` and `briefing.html`. Which page reads which table: `harmonization/argentina/gold/README.md`.
 
 There is no region picker in the header. Fire calendar has its own region buttons (`?region=` in the URL, remembered in the browser).
 

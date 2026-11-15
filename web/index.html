@@ -2,12 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Fire Calendar</title>
-  <!-- The home page is now "The problem". The old Map page is map-old.html; query strings and hashes are kept. -->
-  <script>location.replace("problem.html" + location.search + location.hash);</script>
-  <meta http-equiv="refresh" content="0; url=problem.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Burning activity map of Argentina</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
 </head>
-<body>
-  <p>Opening <a href="problem.html">the problem page</a>. The old map is at <a href="map-old.html">map-old.html</a>.</p>
+<body class="map-page">
+  <header id="site-header"></header>
+  <main id="main">
+    <div class="home-shell" id="map-shell">
+
+      <!-- The answer for the selection and month on the timeline, in one sentence -->
+      <section class="home-head" aria-live="polite">
+        <div class="home-head-text">
+          <p class="eyebrow" id="head-eyebrow">Argentina · 2003 to today</p>
+          <h1 id="head-title">Burning activity map</h1>
+          <p class="home-head-sub" id="head-sub">Loading the fire record…</p>
+        </div>
+        <div id="mode" role="group" aria-label="What to do on the map"></div>
+        <p class="banner" id="data-banner" data-source="offline"></p>
+      </section>
+
+      <!-- Controls for the chosen mode -->
+      <div class="home-toolbar">
+        <div class="pane" id="pane-explore">
+          <span class="tb-label">Value on the map</span>
+          <div id="metric" role="group" aria-label="Value on the map"></div>
+          <span class="small muted tb-hint">Click a circle for that place's history.</span>
+        </div>
+
+        <div class="pane" id="pane-region" hidden>
+          <span class="tb-label">Region</span>
+          <div class="chips" id="region-chips" role="group" aria-label="Region"></div>
+          <span class="tb-label">Known events</span>
+          <div class="chips" id="event-chips"></div>
+        </div>
+
+        <div class="pane" id="pane-draw" hidden>
+          <div class="draw-tools">
+            <button type="button" class="btn small secondary" id="tool-rect" aria-pressed="false"><span data-icon="area" data-size="16"></span>Rectangle</button>
+            <button type="button" class="btn small secondary" id="tool-poly" aria-pressed="false"><span data-icon="target" data-size="16"></span>Polygon</button>
+            <button type="button" class="btn small" id="tool-finish" hidden>Finish polygon</button>
+            <button type="button" class="btn small ghost" id="tool-clear"><span data-icon="close" data-size="16"></span>Clear</button>
+          </div>
+          <span class="tb-label">Examples</span>
+          <div class="chips" id="examples"></div>
+          <details class="tb-more">
+            <summary>Type corners or pick years</summary>
+            <div class="tb-more-body">
+              <form class="coords" id="coords" aria-label="Type rectangle corners">
+                <label class="field">South (lat)<input type="number" step="0.1" name="south" value="-34.5"></label>
+                <label class="field">North (lat)<input type="number" step="0.1" name="north" value="-32.1"></label>
+                <label class="field">West (lon)<input type="number" step="0.1" name="west" value="-61"></label>
+                <label class="field">East (lon)<input type="number" step="0.1" name="east" value="-58.4"></label>
+                <button type="submit" class="btn small secondary" style="grid-column:1/-1">Use these corners</button>
+              </form>
+              <div class="coords" style="margin-top:0.6rem">
+                <label class="field">From <select id="year-from" aria-label="From year"></select></label>
+                <label class="field">To <select id="year-to" aria-label="To year"></select></label>
+              </div>
+              <p class="notice"><strong>Resolution limit:</strong> data is summed over 1-degree cells (about 100 km). A shape smaller than one cell uses the whole cell. Before 2012 each month carries a reliability flag from the number of MODIS detections, so small or quiet areas are flagged, not hidden.</p>
+            </div>
+          </details>
+          <p class="small muted tb-help" id="tool-help">Choose a tool, then drag on the map (rectangle) or click the corners and press Finish (polygon). Map cells are about 1 degree (roughly 100 km) wide.</p>
+        </div>
+      </div>
+
+      <div class="home-map">
+        <div id="map" role="application" aria-label="Map of Argentina. Each circle is one 1-degree cell: size is the number of fire detections, colour compares it with that place's usual month. The side column has the same data for keyboard use."></div>
+        <div class="map-legend" id="map-legend" aria-label="Legend"></div>
+      </div>
+
+      <div class="timeline" role="group" aria-label="Timeline">
+        <div class="timeline-buttons">
+          <button type="button" class="btn icon secondary small" id="prev" aria-label="Previous month"><span data-icon="prev" data-size="16"></span></button>
+          <button type="button" class="btn icon small" id="play" aria-label="Play through the months"><span data-icon="play" data-size="16"></span></button>
+          <button type="button" class="btn icon secondary small" id="next" aria-label="Next month"><span data-icon="next" data-size="16"></span></button>
+        </div>
+        <div class="timeline-track">
+          <div class="timeline-bars" id="timeline-bars" aria-hidden="true"></div>
+          <input type="range" id="slider" min="0" max="0" value="0" aria-label="Month">
+        </div>
+        <div class="timeline-label" id="timeline-label"><strong>Loading…</strong><span></span></div>
+      </div>
+
+      <!-- Always open: the calendar for the current selection (Argentina, a region, or your area) -->
+      <aside class="home-side" id="drawer" aria-labelledby="drawer-title">
+        <div class="drawer-head">
+          <div>
+            <p class="eyebrow" id="drawer-eyebrow"></p>
+            <h2 id="drawer-title"></h2>
+            <p class="card-sub" id="drawer-sub"></p>
+          </div>
+          <button type="button" class="btn small ghost" id="drawer-close" hidden><span data-icon="close" data-size="16"></span>Back to Argentina</button>
+        </div>
+        <div id="calendar"></div>
+        <div id="cal-key"></div>
+        <div class="drawer-detail detail-card" id="detail" aria-live="polite"></div>
+
+        <div id="explore-side">
+          <section class="side-section" id="cell-detail" aria-live="polite"></section>
+          <section class="side-section" aria-labelledby="list-title">
+            <h3 id="list-title">Busiest cells this month</h3>
+            <ul class="cell-list" id="cell-list"></ul>
+          </section>
+        </div>
+
+        <div class="stat-row" id="drawer-stats"></div>
+        <div class="drawer-tools">
+          <div id="baseline" role="group" aria-label="Usual means" hidden></div>
+          <span class="spacer"></span>
+          <a class="btn small ghost" id="drawer-link" hidden></a>
+          <button type="button" class="btn small secondary" id="csv"><span data-icon="download" data-size="16"></span>Download CSV</button>
+        </div>
+        <h3>Month by month</h3>
+        <div id="series" style="min-height:220px"></div>
+        <p class="caption" id="drawer-caption"></p>
+        <p class="small muted">Fire detections in one unit for every month, <a href="glossary.html">VIIRS-equivalent</a>: measured by VIIRS from 2012, converted from MODIS before.</p>
+        <p class="doc-links small"><span id="doc-approach"></span><span id="doc-scope"></span><a href="accuracy.html">How accurate is it?</a></p>
+      </aside>
+    </div>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="mvp.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>
