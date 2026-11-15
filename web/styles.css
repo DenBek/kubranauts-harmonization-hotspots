@@ -1205,3 +1205,7 @@ ul.keys { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0; list-style: n
   body { background: #fff; }
   .card, .kpi { box-shadow: none; }
 }
+
+/* Header fit with the longer page list (MVP pages) */
+.nav a { white-space: nowrap; padding: 0.45rem 0.55rem; font-size: 0.9rem; }
+.region-picker select { max-width: 13rem; text-overflow: ellipsis; }

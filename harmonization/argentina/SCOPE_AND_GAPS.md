@@ -1,6 +1,8 @@
 # Scope and gaps: Argentina harmonized fire calendar
 
-Living document. Single source of truth for what we deliver, what we do not, and what is open. Last updated **2026-11-14**.
+Living document. Single source of truth for what we deliver, what we do not, and what is open. Last updated **2026-11-15**.
+
+**Order of authority when numbers disagree:** the gold tables and [gold/README.md](gold/README.md), then [HARMONIZATION_APPROACH.md](HARMONIZATION_APPROACH.md), then this file, then older logs (`findings_log.md`, `recommendation.md`, `MVP_LOG.md`).
 Method and story: [HARMONIZATION_APPROACH.md](HARMONIZATION_APPROACH.md). Run log and front-end change list: [MVP_LOG.md](MVP_LOG.md).
 Data schema: [gold/README.md](gold/README.md). Investigation: [findings_log.md](findings_log.md), [recommendation.md](recommendation.md).
 
@@ -14,14 +16,17 @@ Owner = not recorded in the repo; "unassigned" until the team fills it in.
 
 | Deliverable | Status | Owner | Updated | Note |
 |---|---|---|---|---|
-| Investigation and method (M1) | done | unassigned | 2026-11-14 | `findings_log.md`, `recommendation.md` |
-| Flare-cell and day-only checks | done | unassigned | 2026-11-14 | `data/13_mvp_checks.txt`; D-14, D-15 |
-| Gold tables (Parquet, local) | done | unassigned | 2026-11-14 | `gold/*.parquet`; build log `data/14_build_gold.txt` |
-| Reliability lookup and accuracy file | done | unassigned | 2026-11-14 | `gold_reliability`, `gold_accuracy` |
+| Investigation and method (M1) | done | unassigned | 2026-11-14 | `findings_log.md`; superseded by `HARMONIZATION_APPROACH.md` |
+| Flare-cell and day-only checks | done | unassigned | 2026-11-14 | `data/13_mvp_checks.txt`; D-6, D-14 |
+| October 2026 check | done | unassigned | 2026-11-15 | `data/16_october_check.txt`: real low on provisional data (G-5) |
+| Gold tables (Parquet) | done | unassigned | 2026-11-15 | `gold/*.parquet`; provisional and partial-year rules built in (D-21, D-22) |
+| Reliability lookup and accuracy file | done | unassigned | 2026-11-15 | `gold_reliability`, `gold_accuracy` (held-out figures only) |
+| Published to R2 (`gold/`, `publish/`) | done | unassigned | 2026-11-15 | via DuckDB (boto3 fails TLS here, G-18); analogs not published |
+| Web: regions, API allowlist, nav, unit labels | done | unassigned | 2026-11-15 | `web/gold.js`, `functions/api/gold/[table].js`, `web/nav.js` |
+| Web: The Problem, Regions, Draw an Area, How Accurate Is This? | done, checked locally | unassigned | 2026-11-15 | new pages; not yet deployed (G-11) |
 | Pitch figures (4) | done | unassigned | 2026-11-14 | `plots/pitch_1..4_*.png` |
-| Method write-up | done, 2 sections pending | unassigned | 2026-11-14 | `HARMONIZATION_APPROACH.md` |
-| Publish to R2 and live site | **blocked** | unassigned | 2026-11-14 | needs web changes first (G-11); not uploaded |
-| Web app changes (regions, units, flags, accuracy panel) | not started | unassigned | 2026-11-14 | list in `MVP_LOG.md` |
+| Method write-up | done | unassigned | 2026-11-15 | `HARMONIZATION_APPROACH.md` |
+| Deploy to Cloudflare Pages | not started | unassigned | 2026-11-15 | needs commit and push; binding `FIRMS` on Production and Preview |
 | Build runs in a fresh Codespace | not started | unassigned | 2026-11-14 | depends on local DuckDB (G-12) |
 | Terra bridge 2000-11 to 2002-06 | not started | unassigned | 2026-11-14 | out of MVP (D-2) |
 
@@ -34,7 +39,8 @@ Owner = not recorded in the repo; "unassigned" until the team fills it in.
 - **Data products:** six app tables (no analogs), plus `gold_reliability`, `gold_accuracy` and the 0.1° cell table (`gold/README.md`).
 - **Honesty built in:** per-month `method`, `coverage`, `likely range` (about 85% chance of containing the truth on held-out years), `reliability` flag, provisional marker, two anomaly baselines.
 - **Accuracy on held-out years 2020–2022** (fit 2012–2019): median monthly error 9.5%, 90th percentile 19.0%, worst annual 8.9%, bias −7.2%, likely-range coverage 86%, five-class anomaly agreement 89% at country level (`data/14_build_gold.txt`, `data/13_mvp_checks.txt`).
-- **In-sample only:** anomaly agreement 96% (country), 85% (zone), 71% (2° block) was measured on the fit years 2012–2019 (`findings_log.md` §3). Not held out; labelled as such in `gold_accuracy`.
+- **Provisional rule:** provisional (NRT) months and the month in progress show the value, never an anomaly colour, ratio, rank or percentile (D-21).
+- **App pages:** The Problem, Regions, Draw an Area, How Accurate Is This? (new), plus Map and Calendar (existing). Overview, Year and Briefing are hidden from the nav because they need the analogs table or SMS copy (D-23).
 
 ## 3. Decisions log
 
@@ -42,7 +48,7 @@ Owner = not recorded in the repo; "unassigned" until the team fills it in.
 |---|---|---|---|---|---|
 | D-1 | 2026-11-14 | Argentina only; code stays region-parameterised | Global; several countries | MVP size; method validated on one country | `docs/new_prompt.md`; `common.py` REGION |
 | D-2 | 2026-11-14 | Calendar starts 2003-01; Terra-only months and Aqua start-up (2000-11 to 2002-06) excluded | Include Terra via direct factor | Keeps MVP simple; Terra band is wider (LOYO sd 0.186 vs 0.116) | `findings_log.md` §5; `docs/new_prompt.md` |
-| D-3 | 2026-11 (investigation) | Harmonize detection counts | FRP; active cell-days | Lowest residual (0.095), slope 0.99, 96% agreement at country scale; FRP and cell-days worse | `findings_log.md` §3 |
+| D-3 | 2026-11 (investigation) | Harmonize detection counts | FRP; active cell-days | Lowest residual (0.095) and slope 0.99 at country scale; FRP and cell-days worse (agreement figures: findings log §3) | `findings_log.md` §3 |
 | D-4 | 2026-11 | Unit = VIIRS-equivalent counts; `*_cell_days` column names kept but hold counts | Rename columns now | Avoid breaking the app mid-build; rename later | `gold/README.md`; MVP_LOG front-end item 1 |
 | D-5 | 2026-11 | One factor per calendar month for the country | One global factor; zone × month; day/night factors | Halves global-factor error (9.5% vs 16.5%); zones and day/night add nothing | `findings_log.md` §5, §5 post-hoc |
 | D-6 | 2026-11-14 | Day+night is default | Day only | Day-only median 8.7% vs 9.5%, but worse p90 (21.5% vs 19.0%) and annual (9.5% vs 8.9%) | `data/13_mvp_checks.txt` |
@@ -60,6 +66,13 @@ Owner = not recorded in the repo; "unassigned" until the team fills it in.
 | D-18 | 2026-11-14 | Gap days: scale by valid days, record `coverage`; current month not scaled to full | Treat as zero | Missing days are missing data | `findings_log.md` §4f |
 | D-19 | 2026-11-14 | Anomaly classes use the app's ratio thresholds (0.5/0.8/1.2/1.8) | Percentile classes | Keeps the app's colour logic | `scripts/build_sample_gold.py` |
 | D-20 | 2026-11-14 | Regions: reuse the four validated zones plus a Delta box | Provinces; ecoregions | No polygon data in repo; zones are the validated level | `07_build_daily.py`; `gold/README.md` |
+| D-21 | 2026-11-15 | Provisional (NRT) and in-progress months: value only; anomaly, ratio, rank and percentile are null; `anomaly_status` column; front end draws a dashed "P" cell | Show anomaly with a warning | NRT data can be revised; holds whatever the October check says | `14_build_gold.py`; `gold/README.md`; `web/mvp.js` |
+| D-22 | 2026-11-15 | Years with an insufficient-data month are partial: no rank, no anomaly, `is_partial` | Count the month as 0 | Consistent with D-17 | `gold/gold_region_annual.parquet` |
+| D-23 | 2026-11-15 | Hide Overview, Year and Briefing from the nav (files kept) | Delete; rework | They depend on analogs (not produced) or SMS copy; pages not to be edited beyond breakage | `web/nav.js` |
+| D-24 | 2026-11-15 | Quote only held-out anomaly agreement (89%, whole country, five classes); in-sample figures stay in the findings log and are removed from `gold_accuracy` | Show in-sample with a label | In-sample figures flatter the method | `gold_accuracy`; `web/accuracy.js` |
+| D-25 | 2026-11-15 | Upload through DuckDB; `export_calendar.py --via-duckdb` | Disable TLS checks in boto3 | boto3 fails certificate verification on this network; nothing is switched off | `scripts/export_calendar.py`; `14_build_gold.py --upload` |
+| D-26 | 2026-11-15 | New pages use the plain SVG approach and a shared `web/mvp.js`; headline view is year totals with months and cameras options | A chart library | No new frameworks | `web/mvp.js` |
+| D-27 | 2026-11-15 | Draw page: cells whose centre is inside the shape; a shape smaller than a cell uses the cell it sits in | Reject small shapes | Honest flag rather than hidden | `web/draw.js` |
 
 ## 4. Known gaps
 
@@ -71,21 +84,29 @@ Severity is our judgement. "Open" unless marked.
 | G-2 | Small-area values before 2012 are unreliable | Under 50 Aqua detections the range is wider than a factor of 2 (`findings_log.md` §5) | high | Cannot be fixed by modelling; warn users, push to larger areas |
 | G-3 | Slow, unexplained drift in the ratio (bias +10% in 2016 to −6% in 2022) | Pre-2012 values may carry a 5–10% level error not fully in the range | medium | Test whether bias tracks fire-season severity (`recommendation.md` next step 2) |
 | G-4 | Likely range only 86% on unseen years | Users may read "likely" as more than it is | medium | More held-out years; keep the wording |
-| G-5 | October 2026 is the lowest October in 24 years (0.19× median) | Looks real (Aqua, Terra, NOAA-20 agree) but data is NRT | medium | Wait for SP data; rerun. *Unverified in repo: cross-check was ad hoc* (MVP_LOG run 5) |
-| G-6 | Insufficient-data months counted as 0 in annual totals (Patagonia, Delta) | Understates those years | low | Exclude them and flag the year; `months_insufficient` column exists |
+| G-5 | **Checked 2026-11-15.** October 2026 is the lowest October in 24 years (0.19× median) | Real low: all three satellites have 31 of 31 valid days and detections per valid day below every earlier October (`data/16_october_check.txt`). Still provisional NRT data | medium | Rerun `16_october_check.py` when SP data replaces NRT |
+| G-6 | **Resolved 2026-11-15 (D-22).** Insufficient-data months were counted as 0 in annual totals | Understated those years | low | Done: partial years get `is_partial`, no rank, no anomaly |
 | G-7 | Held-out error per calendar month rests on 3 months | `holdout_mape` is noisy | low | Use LOYO over 2012–2022 per month |
 | G-8 | MODIS version change (6.2 → 6.03 → 61.03) not checked against FIRMS docs | Could be a real algorithm step | medium | Read FIRMS release notes (`findings_log.md` §4a) |
 | G-9 | Possible unflagged gas flares (Vaca Muerta, 1,021 active days) | Slight VIIRS inflation in the west; effect under 3% | low | Extend the static-source mask |
 | G-10 | Regions are rough boxes | Edges do not follow provinces or ecoregions | low | Province or ecoregion polygons |
-| G-11 | Tables not published; the web app still lists the sample regions and says "cell-days" | Live pages would be empty with current `REGIONS` | **high** | Apply the front-end change list in `MVP_LOG.md`, then upload |
+| G-11 | Partly resolved 2026-11-15: tables are published and the web changes are made, but the site is not deployed | The live site shows the old pages (and, with the new tables in R2, the old regions find no rows) until the commit is pushed and Pages redeploys. The `FIRMS` binding must be on Production and Preview | **high** | Commit and push, then check the live pages |
 | G-12 | `14_build_gold.py` needs the local, gitignored `data/argentina.duckdb` | Not reproducible in a fresh Codespace without ~6 min of extraction | medium | Rerun 02 → 05 → 07 there, or publish the DuckDB or `cellday` to R2 |
-| G-13 | `gold_accuracy` anomaly-agreement rows (96/85/71%) are in-sample | Flatters the method | medium | Recompute on held-out years at zone and block level; labelled meanwhile (resolved partly 2026-11-14: labels added) |
+| G-13 | Zone and block anomaly agreement exist only in sample (`findings_log.md` §3). The in-sample rows were removed from `gold_accuracy` on 2026-11-15 | Held-out agreement is known only for the whole country (89%) | medium | Recompute on held-out years at zone and block level |
 | G-14 | Map cells are 1° in the browser | Cannot draw fine polygons client-side | low | Server-side sum from the 0.1° table, or lazy-load tiles |
 | G-15 | Suomi NPP data after 2025 is not loaded; NOAA-21 absent | No cross-check for NRT months | low | Load them (brief §3) |
 | G-16 | Owners of deliverables are not recorded | Status table has "unassigned" | low | Team fills in |
 | G-17 | Only Argentina is tested | The method may be Argentina-specific | medium | Rerun on a second region (`recommendation.md` next step 3) |
+| G-18 | boto3 cannot verify TLS to R2 on the build machine | The default upload path fails | low | Use `--via-duckdb` (D-25); fix the certificate store |
+| G-19 | The existing Map page's tooltip and CSV reference `modis_hotspots` and `viirs_hotspots`, trimmed from the JSON for size | Those fields show "none" on the Map page | low | Re-add the two columns to the cell export, or edit `map.js` |
+| G-20 | The Worker falls back to old sample files for any table not in R2 (`gold_region_analogs`), and local `wrangler pages dev` has no R2 | Hidden pages and local previews can show old regions | low | Use `scripts/dev_server.py` for local real-data previews; retire `web/sample/` once analogs are decided |
+| G-21 | Links to the two documents point at the `dev` branch on GitHub | 404 until the docs are pushed | low | Push; change `DOCS_BASE` in `web/mvp.js` after merging to main |
+| G-22 | The Draw page picks the reliability bin from raw Aqua counts, not coverage-scaled; the cell JSON has no `coverage` | A bin can differ by one step in a month with many missing days | low | Add coverage to the cell export |
+| G-23 | Visual checks were done in headless Edge only | No screen-reader or phone test | low | Test in browsers and on a phone |
 
 ## 5. Open questions (need a human)
+
+0. (New) Commit, push and deploy now? The live site stays on the old pages until then (G-11).
 
 1. Which web-app changes go first, and who makes them (G-11)? Upload waits on this.
 2. Is the 2003–2022 default anomaly baseline right, or should VIIRS-only (2012–2025) be the default? Both are stored (D-9).
@@ -115,6 +136,11 @@ Severity is our judgement. "Open" unless marked.
 
 ## 7. Change log (newest first)
 
+- 2026-11-15: Docs updated: section 7 of `HARMONIZATION_APPROACH.md` now describes the live pages; October 2026 verdict added (section 8); `recommendation.md` marked superseded; in-sample anomaly figures removed outside the findings log.
+- 2026-11-15: Added four pages (`problem`, `regions`, `draw`, `accuracy`) with `mvp.js` and `mvp.css`; nav updated; Overview, Year and Briefing hidden. Existing pages: unit label "detections", "not ranked yet" for provisional months.
+- 2026-11-15: Published `gold/*.parquet` and `publish/*.json` to R2 through DuckDB (analogs not published). Added `--via-duckdb` and `scripts/dev_server.py`.
+- 2026-11-15: Provisional rule and partial-year rule built into the gold tables (D-21, D-22); `gold_accuracy` reduced to 8 held-out rows.
+- 2026-11-15: October 2026 check saved (`16_october_check.py`): real low on provisional data (G-5).
 - 2026-11-14: Rewrote this file as a living document (status, decisions, gaps, questions, future scope). Added `HARMONIZATION_APPROACH.md`.
 - 2026-11-14: Found that the 96/85/71% anomaly-agreement figures are in-sample; `gold_accuracy` rows now carry their own `test_period` (G-13). Updated `gold/README.md`.
 - 2026-11-14: Built gold tables, reliability and accuracy files, four figures (`14_build_gold.py`, `15_pitch_figures.py`); wrote `MVP_LOG.md` and `gold/README.md`.

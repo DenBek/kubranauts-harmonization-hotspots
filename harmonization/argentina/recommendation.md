@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-11-15).** The method, numbers and decisions now live in [HARMONIZATION_APPROACH.md](HARMONIZATION_APPROACH.md) and the gold tables. Differences: the build fits the factors on **2012–2019**, not 2012–2022 as written below, and the quoted likely range is −20.9% / +23.2%. Kept as the investigation-time recommendation.
+
 # Recommendation: harmonizing MODIS and VIIRS fire counts for Argentina
 
 Evidence is in [findings_log.md](findings_log.md) (sections in brackets) and [plots/](plots/). Scope: Argentina only, 2000-11 to 2026-11. Status: investigation; nothing is implemented in the pipeline.

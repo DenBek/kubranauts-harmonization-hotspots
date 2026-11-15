@@ -19,25 +19,22 @@ wrote gold/gold_cell_monthly.parquet: 54760 rows, 0.41 MB
 wrote gold/gold_region_monthly.parquet: 1722 rows, 0.07 MB
 wrote gold/gold_region_annual.parquet: 144 rows, 0.01 MB
 wrote gold/gold_region_headline.parquet: 6 rows, 0.00 MB
-  headline: October 2026 (provisional, near-real-time data): 0.2x the usual October, rank 24 of 24.
-  headline: October 2026 (provisional, near-real-time data): 0.3x the usual October, rank 24 of 24.
-  headline: October 2026 (provisional, near-real-time data): 0.2x the usual October, rank 24 of 24.
-  headline: October 2026 (provisional, near-real-time data): 0.2x the usual October, rank 24 of 24.
-  headline: October 2026 (provisional, near-real-time data): 0.3x the usual October, rank 24 of 24.
-  headline: October 2026 (provisional, near-real-time data): 0.4x the usual October, rank 20 of 24.
+  headline: July 2026: 0.5x the usual July, rank 21 of 24.
+  headline: July 2026: 0.9x the usual July, rank 12 of 24.
+  headline: July 2026: 0.3x the usual July, rank 23 of 24.
+  headline: July 2026: 0.3x the usual July, rank 24 of 24.
+  headline: July 2026: 0.4x the usual July, rank 22 of 24.
+  headline: July 2026: 0.8x the usual July, rank 13 of 24.
 wrote gold/gold_calibration.parquet: 12 rows, 0.00 MB
 wrote gold/gold_reliability.parquet: 7 rows, 0.00 MB
-wrote gold/gold_accuracy.parquet: 11 rows, 0.00 MB
-  kpi: Half of the converted months were within 9% of what VIIRS actually measured.
-  kpi: Nine converted months in ten were within 19% of the VIIRS measurement.
-  kpi: Converted annual totals were never more than 9% off.
-  kpi: On average the conversion came out 7% lower than VIIRS in the test years.
+wrote gold/gold_accuracy.parquet: 8 rows, 0.00 MB
+  kpi: Half of the converted months were within 9.5% of what VIIRS actually measured.
+  kpi: Nine converted months in ten were within 19.0% of the VIIRS measurement.
+  kpi: Converted annual totals were never more than 8.9% off.
+  kpi: On average the conversion came out 7.2% lower than VIIRS in the test years.
   kpi: The likely range contained the true VIIRS value in 86% of test months.
   kpi: At country scale the true value is likely (about 85% chance) to be no more than 21% below the converted value.
   kpi: At country scale the true value is likely (about 85% chance) to be no more than 23% above the converted value.
-  kpi: On the fit years (2012-2019, so not held out), converted MODIS and VIIRS put the month in the same class (below, normal, above) 96% of the time for all of Argentina.
-  kpi: For large regions (about a quarter of the country) they agree 85% of the time.
-  kpi: For 2-degree blocks (about 200 km) they agree only 71% of the time.
-  kpi: Using the calendar's five colour classes, converted and measured months matched 89% of the time (country, test years).
+  kpi: Using the calendar's five colour classes, converted and measured months matched 89% of the time (whole country, held-out years).
 check: 0.1deg cells sum to country month, max abs diff 0.05; 1.0deg cells, max abs diff 2.00 (rounding)
 check: NaN values in region table (must be 0, nulls are fine): 0

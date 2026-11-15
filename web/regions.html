@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Regions</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow" id="eyebrow">Argentina, month by month</p>
+      <h1>Burning activity by region</h1>
+      <p class="lede">Each square is one month. Its colour says how busy that month was compared with the same month in other years. Hatched squares were converted from the older MODIS camera and carry a likely range. Dashed squares marked P are provisional and are not compared yet.</p>
+      <p class="banner" id="data-banner" data-source="offline"></p>
+    </div>
+
+    <div class="toolbar" style="flex-wrap:wrap">
+      <span class="toolbar-label">Region</span>
+      <div class="chips" id="region-chips" role="group" aria-label="Region"></div>
+    </div>
+    <div class="toolbar" style="flex-wrap:wrap">
+      <span class="toolbar-label">Usual means</span>
+      <div id="baseline" role="group" aria-label="Baseline"></div>
+      <span class="spacer"></span>
+      <button type="button" class="btn secondary small" id="csv"><span data-icon="download" data-size="16"></span>Download CSV</button>
+    </div>
+    <div class="toolbar" style="flex-wrap:wrap">
+      <span class="toolbar-label">Try a known event</span>
+      <div class="chips" id="events" role="group" aria-label="Known events"></div>
+    </div>
+
+    <div class="grid split">
+      <section class="card" aria-label="Calendar">
+        <div id="calendar"></div>
+        <div id="cal-key"></div>
+        <p class="caption" id="cal-caption"></p>
+      </section>
+      <aside class="card detail-card sticky" id="detail" aria-live="polite"></aside>
+    </div>
+
+    <section class="card" style="margin-top:1rem">
+      <div class="card-head"><div>
+        <h2>The series for this region</h2>
+        <p class="card-sub" id="series-sub"></p>
+      </div></div>
+      <div id="series" style="min-height:300px"></div>
+      <p class="caption"><strong>What to notice:</strong> the hatched stretch before 2012 is converted from MODIS, with the shaded likely range. From 2012 the months are measured. The dotted months at the end are provisional.</p>
+    </section>
+
+    <div class="grid two" style="margin-top:1rem">
+      <section class="card" aria-labelledby="latest-title">
+        <h2 id="latest-title">Latest months</h2>
+        <div id="latest"></div>
+      </section>
+      <section class="card" aria-labelledby="tops-title">
+        <h2 id="tops-title">Busiest months and years</h2>
+        <div class="grid two" style="gap:0.8rem">
+          <div><h3 class="small muted" style="margin:0 0 0.4rem">Top 8 months</h3><ol class="rank-list" id="top-months"></ol></div>
+          <div><h3 class="small muted" style="margin:0 0 0.4rem">Top 6 years</h3><ol class="rank-list" id="top-years"></ol></div>
+        </div>
+        <p class="small muted" style="margin-top:0.6rem">Provisional and incomplete months and years are left out of the rankings.</p>
+      </section>
+    </div>
+
+    <p class="doc-links"><span id="doc-approach"></span><span id="doc-scope"></span><a href="accuracy.html">How accurate is this?</a></p>
+  </main>
+  <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="mvp.js"></script>
+  <script src="regions.js"></script>
+</body>
+</html>

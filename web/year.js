@@ -93,12 +93,12 @@ function renderBars(mine, current) {
     medianLabel: "Median year",
     height: 260,
     color: "--s-harm",
-    ariaLabel: "Harmonized cell-days by year",
+    ariaLabel: "Harmonized detections by year",
     tooltip: function (d) {
       return {
         title: d.title,
         rows: [
-          { label: "Cell-days", value: formatNumber(d.value), color: cssVar("--s-harm"), kind: "box" },
+          { label: "Detections", value: formatNumber(d.value), color: cssVar("--s-harm"), kind: "box" },
           { label: "Rank", value: d.row.rank + " of " + d.row.n_years_ranked },
           { label: "Peak", value: MONTHS[d.row.peak_month - 1] },
         ],
@@ -113,7 +113,7 @@ function renderBars(mine, current) {
   document.getElementById("years-chart").hidden = false;
   document.getElementById("years-table").hidden = true;
   tableToggle(fresh, document.getElementById("years-chart"), document.getElementById("years-table"), function () {
-    return buildTable(["Year", "Cell-days", "Rank", "Vs usual", "Peak month", "Months"], mine.map(function (r) {
+    return buildTable(["Year", "Detections", "Rank", "Vs usual", "Peak month", "Months"], mine.map(function (r) {
       return [r.year, formatNumber(r.harmonized_cell_days), r.rank + " of " + r.n_years_ranked, formatRatio(r.anomaly_ratio), MONTHS[r.peak_month - 1], r.months_available];
     }));
   });
@@ -128,7 +128,7 @@ function renderDetail(current) {
   if (!current.is_complete) head.appendChild(el("a", { class: "badge", href: "glossary.html#month-still-open", text: current.months_available + " of 12 months" }));
   host.appendChild(head);
   var big = el("div", { class: "kpi-value", text: formatNumber(current.harmonized_cell_days) });
-  big.appendChild(el("span", { class: "unit", text: "cell-days" }));
+  big.appendChild(el("span", { class: "unit", text: "detections" }));
   host.appendChild(big);
   var dl = el("dl", { class: "metric" });
   dl.innerHTML =
@@ -148,7 +148,7 @@ function renderSeason(current) {
   host.innerHTML = "";
   if (!current) { note.textContent = ""; return; }
   note.textContent = "The shaded months run from " + MONTHS[current.season_start_month - 1] + " to " + MONTHS[current.season_end_month - 1] +
-    " (" + current.season_length_months + " months). Start is when 10% of the year's cell-days had arrived, the midpoint is 50%, and the end is 90%. The tallest bar is the peak. A season that starts early or runs long is a different kind of change than one hot month.";
+    " (" + current.season_length_months + " months). Start is when 10% of the year's detections had arrived, the midpoint is 50%, and the end is 90%. The tallest bar is the peak. A season that starts early or runs long is a different kind of change than one hot month.";
   var values = monthsOf(current.year);
   var max = Math.max.apply(null, values.filter(function (v) { return !isMissing(v); }).concat([1]));
   var total = values.reduce(function (sum, v) { return sum + (v || 0); }, 0);
@@ -156,7 +156,7 @@ function renderSeason(current) {
     var v = values[m - 1];
     var inside = m >= current.season_start_month && m <= current.season_end_month;
     var cls = "month" + (inside ? " in" : "") + (m === current.peak_month ? " peak" : "");
-    var cell = el("div", { class: cls, tabindex: "0", "aria-label": MONTHS[m - 1] + ": " + (isMissing(v) ? "no data" : formatNumber(v) + " cell-days") + (inside ? ", inside the season" : "") });
+    var cell = el("div", { class: cls, tabindex: "0", "aria-label": MONTHS[m - 1] + ": " + (isMissing(v) ? "no data" : formatNumber(v) + " detections") + (inside ? ", inside the season" : "") });
     cell.appendChild(el("span", { class: "lbl", text: MONTHS_SHORT[m - 1] }));
     if (!isMissing(v)) cell.appendChild(el("div", { class: "fill", style: "height:" + Math.max(3, (52 * v) / max) + "px" }));
     var marker = m === current.season_start_month ? "Start" : m === current.season_midpoint_month ? "Mid" : m === current.season_end_month ? "End" : null;
@@ -166,7 +166,7 @@ function renderSeason(current) {
         return {
           title: MONTHS[month - 1] + " " + current.year,
           rows: [
-            { label: "Cell-days", value: isMissing(value) ? "no data" : formatNumber(value), color: cssVar("--s-harm"), kind: "box" },
+            { label: "Detections", value: isMissing(value) ? "no data" : formatNumber(value), color: cssVar("--s-harm"), kind: "box" },
             { label: "Share of year", value: isMissing(value) || !total ? "–" : Math.round((100 * value) / total) + "%" },
           ],
         };
@@ -209,7 +209,7 @@ function renderAnalogs() {
     var card = el("article", { class: "analog", style: "border-left:3px solid " + cssVar(ANALOG_COLORS[i % ANALOG_COLORS.length]) });
     card.appendChild(el("h3", null, [el("span", { text: row.rank + ". " + row.analog_year }), el("span", { class: "num", text: Math.round(row.similarity_pct) + "%" })]));
     card.appendChild(el("div", { class: "sim", "aria-hidden": "true" }, [el("i", { style: "width:" + Math.round(row.similarity_pct) + "%" })]));
-    card.appendChild(el("p", { class: "small", html: term("rest-of-year", "What happened next") + ": " + formatNumber(row.analog_rest_of_year_cell_days) + " more cell-days after " + MONTHS[row.through_month - 1] + ", " + formatRatio(row.analog_rest_vs_median) + " the usual rest of the year." }));
+    card.appendChild(el("p", { class: "small", html: term("rest-of-year", "What happened next") + ": " + formatNumber(row.analog_rest_of_year_cell_days) + " more detections after " + MONTHS[row.through_month - 1] + ", " + formatRatio(row.analog_rest_vs_median) + " the usual rest of the year." }));
     var link = el("button", { type: "button", class: "btn small ghost", text: "Open " + row.analog_year });
     link.addEventListener("click", function () { pickYear(row.analog_year); window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" }); });
     card.appendChild(link);
@@ -230,7 +230,7 @@ function renderAnalogs() {
     series: series,
     selectedIndex: through - 1,
     height: 260,
-    ariaLabel: "Running total of cell-days for " + target + " and its closest years",
+    ariaLabel: "Running total of detections for " + target + " and its closest years",
   });
   legend(document.getElementById("analog-legend"), series.map(function (s) {
     return {
@@ -264,7 +264,7 @@ function renderCalibration() {
   }
   var first = mine[0];
   note.innerHTML = "Each bar is the " + term("calibration-ratio", "calibration ratio") + " for " + term("stratum", "stratum") + " " + first.stratum_id +
-    ": VIIRS cell-days divided by MODIS cell-days in that calendar month. It is the factor used when a month has to be filled from MODIS. " +
+    ": VIIRS detections divided by MODIS detections in that calendar month. It is the factor used when a month has to be filled from MODIS. " +
     term("holdout-error", "Holdout error") + " " + first.holdout_mape + "% is how far that factor was off on years it was not fit to; smaller is a more trustworthy adjustment. " +
     term("fit-window", "Fit") + " on " + first.n_months + " overlap months, " + first.fit_start + " to " + first.fit_end + ", using " + first.viirs_sensor + " (" + first.method_version + ").";
   barChart(document.getElementById("cal-chart"), {
@@ -282,8 +282,8 @@ function renderCalibration() {
         title: d.title,
         rows: [
           { label: "Ratio (VIIRS ÷ MODIS)", value: d.row.ratio.toFixed(2), color: cssVar("--s-viirs"), kind: "box" },
-          { label: "MODIS cell-days in fit", value: formatCompact(d.row.modis_cell_days_fit) },
-          { label: "VIIRS cell-days in fit", value: formatCompact(d.row.viirs_cell_days_fit) },
+          { label: "MODIS detections in fit", value: formatCompact(d.row.modis_cell_days_fit) },
+          { label: "VIIRS detections in fit", value: formatCompact(d.row.viirs_cell_days_fit) },
           { label: "Holdout error", value: d.row.holdout_mape + "%" },
         ],
       };

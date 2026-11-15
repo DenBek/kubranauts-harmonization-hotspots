@@ -75,7 +75,7 @@ Added: `method` (`modelled_aqua` | `observed_viirs` | `mixed` | `provisional_nrt
 likely range; modelled share only), `months_insufficient`.
 
 ### `gold_region_headline`. One row per region
-As of the latest complete month (2026-10, provisional). `top_analog_year` is always null. Added: `method`, `region_name`.
+As of the latest complete, **non-provisional** month (2026-07). `top_analog_year` is always null. Added: `method`, `region_name`, `latest_provisional_month`, `latest_provisional_value` (value only, never compared).
 
 ### `gold_calibration`. 12 rows (one stratum, `argentina`)
 `ratio` = M1 factor (VIIRS ÷ Aqua). `modis_cell_days_fit` and `viirs_cell_days_fit` are the Aqua and Suomi NPP **counts**
@@ -100,12 +100,12 @@ flag and the suggestion. Observed months are always reliable.
 Flag rule, on the half-width of the likely range: ≤ 30% reliable, ≤ 40% good, ≤ 65% caution, above that indicative_only.
 The sum of a small area with Aqua = 0 is not zero fire: VIIRS saw fire in 96% of such block-months.
 
-### `gold_accuracy` (new). 11 rows: the "accuracy" panel
+### `gold_accuracy` (new). 8 rows: the "accuracy" panel
 `metric`, `value`, `unit`, `statement` (one plain-language sentence), `test_period`, `source`, `method_version`, `computed_at`.
 Test: factors fitted on 2012–2019, scored on unseen 2020–2022. Median monthly error 9.5%, 90th percentile 19.0%, worst
-annual 8.9%, bias −7.2%, likely-range coverage 86%. Anomaly agreement on **held-out** years: 89% with the app's five classes
-(country). The 96% (country), 85% (zone) and 71% (2° block) figures are from the **fit years 2012–2019, in sample** (findings
-log §3, three classes); each `gold_accuracy` row carries its own `test_period`, so the app must show that label.
+annual 8.9%, bias −7.2%, likely-range coverage 86%, and 89% agreement with the app's five anomaly classes (whole country). All rows
+are on held-out years and each row carries its `test_period`. Earlier agreement figures from the fit years (in sample) stay in
+`findings_log.md` §3 and are not in this table.
 
 ### `gold_region_analogs`. Not produced
 Analog years are not part of the validated method. The app keeps its sample file for this table, which matches no new
@@ -123,3 +123,14 @@ python scripts/export_calendar.py                            # (repo root, Codes
 
 `14_build_gold.py` reads the local `data/argentina.duckdb` (gitignored). In a fresh Codespace, rebuild it first with
 `02_extract.py` (about 6 minutes against R2), `05_build_local.py` and `07_build_daily.py`.
+
+## Rules added 2026-11-15 (authoritative)
+
+- **Provisional rule.** Months with `method = provisional_nrt` (NRT, from 2026-08) and the month in progress carry the value, but
+  `anomaly_ratio`, `anomaly_diff`, `anomaly_class`, `anomaly_*_viirs`, `anomaly_class_stable`, `percentile_rank` and `rank_in_month` are
+  **null**. New column `anomaly_status` in `gold_region_monthly`: `ok` | `provisional` | `incomplete` | `insufficient_data`. Provisional
+  months are also excluded from ranks (`n_years_ranked` counts complete, non-provisional months).
+- **Partial years.** A year with any `insufficient_data` month is flagged `is_partial = true` and `is_complete = false` in
+  `gold_region_annual`: its total sums only the months that have an estimate, and it gets no rank and no `anomaly_ratio`.
+  The year in progress is partial too.
+- `gold_region_monthly` also exports `raw_count` (unconverted count from the reference satellite) for the raw-against-harmonized view.

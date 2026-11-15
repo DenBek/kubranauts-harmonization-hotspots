@@ -26,6 +26,9 @@ Local mode (no R2, no secrets): read <dir>/<table>.parquet and write
 <dir>/publish/<table>.json, to check the output and its size:
 
     python scripts/export_calendar.py --local harmonization/argentina/gold
+
+If boto3 fails with CERTIFICATE_VERIFY_FAILED (a network that re-signs HTTPS), add --via-duckdb:
+reads and writes then go through DuckDB and boto3 is not used.
 """
 
 import json
@@ -58,14 +61,14 @@ TABLES = {
         "method", "coverage", "reliability", "harmonized_low", "harmonized_high",
         "likely_low_pct", "likely_high_pct", "anomaly_class_stable", "raw_satellite",
         "baseline_id", "baseline_n_years", "baseline_viirs_median", "baseline_viirs_mean",
-        "baseline_viirs_n_years", "anomaly_ratio_viirs", "anomaly_class_viirs",
+        "baseline_viirs_n_years", "anomaly_ratio_viirs", "anomaly_class_viirs", "anomaly_status", "raw_count",
     ],
     "gold_region_annual": [
         "region_id", "year", "harmonized_cell_days", "rank", "n_years_ranked",
         "anomaly_ratio", "peak_month", "peak_month_cell_days", "season_start_month",
         "season_midpoint_month", "season_end_month", "season_length_months",
         "months_available", "is_complete",
-        "method", "harmonized_low", "harmonized_high", "months_insufficient",
+        "method", "harmonized_low", "harmonized_high", "months_insufficient", "is_partial",
     ],
     "gold_region_analogs": [
         "region_id", "target_year", "through_month", "analog_year", "rank", "distance",
@@ -75,7 +78,7 @@ TABLES = {
     "gold_region_headline": [
         "region_id", "as_of_month", "headline", "alt_text", "month_anomaly_ratio",
         "month_rank_in_month", "ytd_cell_days", "ytd_vs_median", "top_analog_year",
-        "method", "region_name",
+        "method", "region_name", "latest_provisional_month", "latest_provisional_value",
     ],
     "gold_calibration": [
         "stratum_id", "month", "ratio", "modis_cell_days_fit", "viirs_cell_days_fit",
@@ -115,12 +118,22 @@ def client():
     )
 
 
-def exists(s3, key):
+def exists(s3, key, con=None):
+    if s3 is None:  # --via-duckdb: list the object with DuckDB instead of boto3
+        return bool(con.sql(f"SELECT * FROM glob('r2://{BUCKET}/{key}')").fetchall())
     try:
         s3.head_object(Bucket=BUCKET, Key=key)
         return True
     except s3.exceptions.ClientError:
         return False
+
+
+def put_text(con, key, text):
+    """Write one text object with DuckDB (raw single line, no CSV quoting). Used when boto3 cannot verify TLS
+    (some networks re-sign HTTPS); DuckDB uses its own certificate handling and nothing is switched off."""
+    con.execute(
+        f"COPY (SELECT ?::VARCHAR AS j) TO 'r2://{BUCKET}/{key}' "
+        "(FORMAT csv, HEADER false, QUOTE '', ESCAPE '', DELIMITER '\x01')", [text])
 
 
 def connect():
@@ -153,7 +166,7 @@ def publish_one(con, s3, table, columns, local_dir=None):
             return
         location = path.as_posix()
     else:
-        if not exists(s3, key):
+        if not exists(s3, key, con):
             print(f"Skip {table}: {key} is not in the bucket. The site keeps the sample.")
             return
         location = f"r2://{BUCKET}/{key}"
@@ -187,12 +200,15 @@ def publish_one(con, s3, table, columns, local_dir=None):
         out.write_bytes(body)
         print(f"Wrote {len(rows)} rows to {out} ({len(body) / 1e6:.2f} MB)")
         return
-    s3.put_object(
-        Bucket=BUCKET,
-        Key=f"publish/{table}.json",
-        Body=body,
-        ContentType="application/json",
-    )
+    if s3 is None:
+        put_text(con, f"publish/{table}.json", body.decode("utf-8"))
+    else:
+        s3.put_object(
+            Bucket=BUCKET,
+            Key=f"publish/{table}.json",
+            Body=body,
+            ContentType="application/json",
+        )
     print(f"Wrote {len(rows)} rows to r2://{BUCKET}/publish/{table}.json")
 
 
@@ -204,7 +220,7 @@ def main():
             publish_one(con, None, table, columns, local_dir=local_dir)
         return
     require_env()
-    s3 = client()
+    s3 = None if "--via-duckdb" in sys.argv else client()
     con = connect()
     for table, columns in TABLES.items():
         publish_one(con, s3, table, columns)

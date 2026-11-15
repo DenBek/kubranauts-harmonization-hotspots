@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · The Problem</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow">Argentina, 2003 to today</p>
+      <h1>Two cameras, one fire record</h1>
+      <p class="lede">Since 2012 the satellites that count fires in Argentina carry a newer camera that sees about 4 to 7 times more fire pixels than the older one. Join the two records end to end and you get a jump that never happened on the ground. Flip the switch to see it, and to see it removed.</p>
+      <p class="banner" id="data-banner" data-source="offline"></p>
+    </div>
+
+    <div class="toolbar">
+      <span class="toolbar-label">Show</span>
+      <div id="view" role="group" aria-label="Which series"></div>
+      <span class="toolbar-label" style="margin-left:0.8rem">Chart</span>
+      <div id="mode" role="group" aria-label="Which chart"></div>
+    </div>
+
+    <section class="card" aria-labelledby="chart-title">
+      <div class="card-head">
+        <div>
+          <h2 id="chart-title">Fire detections per month, Argentina</h2>
+          <p class="card-sub" id="chart-sub"></p>
+        </div>
+      </div>
+      <div id="chart" style="min-height:330px"></div>
+      <div id="chart-key" class="key-row"></div>
+      <p class="caption" id="caption"></p>
+    </section>
+
+    <div class="stat-row" id="stats" style="margin-top:1rem"></div>
+
+    <section class="card" style="margin-top:1rem">
+      <h2>What is going on?</h2>
+      <ul>
+        <li>A satellite flags every small square of ground that looks hot enough to hold a fire. Each flag is one detection.</li>
+        <li>MODIS (satellites Terra and Aqua) has squares about 1 km wide. VIIRS (Suomi NPP and NOAA-20) has squares about 375 m wide and is more sensitive, so it flags many more.</li>
+        <li>We measured how much more, month by month, while both flew (2012 to 2019). Before 2012 we multiply the MODIS Aqua count by that number to get what VIIRS would have counted. From 2012 we use VIIRS directly.</li>
+      </ul>
+      <p class="doc-links"><span id="doc-approach"></span><span id="doc-scope"></span><a href="accuracy.html">How accurate is this?</a><a href="regions.html">Explore the regions</a></p>
+    </section>
+  </main>
+  <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="mvp.js"></script>
+  <script src="problem.js"></script>
+</body>
+</html>

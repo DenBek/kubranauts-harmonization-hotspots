@@ -17,7 +17,7 @@ Unit: VIIRS-equivalent fire detections ("fire pixels one VIIRS satellite would h
 NOTE: columns named *_cell_days hold detection COUNTS in this version (kept for app compatibility).
 
 Run from harmonization/argentina/: ../../venv/Scripts/python.exe -u 14_build_gold.py [--upload]
---upload copies gold/*.parquet to r2://firms-data/gold/ (needs R2_KEY_ID, R2_SECRET, CF_ACCOUNT_ID).
+--upload copies gold/*.parquet to r2://firms-data/gold/ through DuckDB (needs R2_KEY_ID, R2_SECRET, CF_ACCOUNT_ID, or .env).
 """
 import calendar
 import os
@@ -284,10 +284,13 @@ out = []
 for (rid, mo), g in rm.groupby(["region_id", "month"]):
     bd = stats(g, BASE_DEFAULT, ["modelled_aqua", "observed_viirs"])
     bv = stats(g, BASE_VIIRS, ["observed_viirs"])
-    peers = g[g.is_complete & g.harmonized.notna()].harmonized
+    peers = g[g.is_complete & g.harmonized.notna() & (g.method != "provisional_nrt")].harmonized
     for i, row in g.iterrows():
         o = {}
-        ok = row.is_complete and pd.notna(row.harmonized)
+        # A2 rule: provisional (NRT) and incomplete months show the value only, never an anomaly, rank or percentile.
+        ok = bool(row.is_complete) and row.method != "provisional_nrt" and pd.notna(row.harmonized)
+        o["anomaly_status"] = ("provisional" if row.method == "provisional_nrt" else "incomplete" if not row.is_complete
+                               else "insufficient_data" if row.method == "insufficient_data" else "ok")
         md, mv = bd.median(), bv.median()
         o["baseline_id"] = f"harmonized_{BASE_DEFAULT[0]}_{BASE_DEFAULT[1]}"
         o["baseline_median"], o["baseline_mean"] = md, bd.mean()
@@ -321,7 +324,7 @@ REGION_COLS = ["region_id", "year", "month", "month_start", "harmonized_cell_day
                "method", "coverage", "reliability", "harmonized_low", "harmonized_high", "likely_low_pct", "likely_high_pct",
                "anomaly_class_stable", "raw_count", "ref_sat", "aqua_equiv", "baseline_id", "baseline_n_years",
                "baseline_viirs_median", "baseline_viirs_mean", "baseline_viirs_n_years", "anomaly_ratio_viirs",
-               "anomaly_class_viirs"]
+               "anomaly_class_viirs", "anomaly_status"]
 rmo = rm[REGION_COLS].rename(columns={"ref_sat": "raw_satellite"}).sort_values(["region_id", "month_start"]).reset_index(drop=True)
 rmo["month_start"] = rmo.month_start.dt.date
 for c_ in ["harmonized_cell_days", "harmonized_low", "harmonized_high", "baseline_median", "baseline_mean", "baseline_p25",
@@ -342,7 +345,8 @@ for rid, g in rm.groupby("region_id"):
     for y, gy in g.groupby("year"):
         gy = gy.sort_values("month")
         tot = gy.harmonized.sum(skipna=True)
-        complete = len(gy) == 12 and gy.is_complete.all()
+        n_insuff = int((gy.method == "insufficient_data").sum())
+        complete = len(gy) == 12 and bool(gy.is_complete.all()) and n_insuff == 0   # a year with blank months is partial
         methods = set(gy.method)
         mth = (methods.pop() if len(methods) == 1 else ("provisional_nrt" if "provisional_nrt" in methods else "mixed"))
         mod = gy[gy.method == "modelled_aqua"]
@@ -363,6 +367,7 @@ for rid, g in rm.groupby("region_id"):
                         peak_month_cell_days=round(pk.harmonized, 1), season_start_month=s0, season_midpoint_month=s1,
                         season_end_month=s2, season_length_months=(s2 - s0 + 1) if tot > 0 else None,
                         months_available=int((gy.is_complete & gy.harmonized.notna()).sum()), is_complete=complete,
+                        is_partial=(not complete),
                         method=mth, harmonized_low=round(low, 1), harmonized_high=round(high, 1),
                         months_insufficient=int((gy.method == "insufficient_data").sum())))
     yd = pd.DataFrame(yrs)
@@ -370,12 +375,12 @@ for rid, g in rm.groupby("region_id"):
     base = comp[comp.year.between(*BASE_DEFAULT)].harmonized_cell_days.median()
     yd["rank"] = yd.harmonized_cell_days.where(yd.is_complete).rank(ascending=False, method="min").astype("Int64")
     yd["n_years_ranked"] = len(comp)
-    yd["anomaly_ratio"] = (yd.harmonized_cell_days / base).round(3)
+    yd["anomaly_ratio"] = (yd.harmonized_cell_days / base).round(3).where(yd.is_complete)   # partial years get no anomaly
     ann.append(yd)
 ann = pd.concat(ann)
 ANN_COLS = ["region_id", "year", "harmonized_cell_days", "rank", "n_years_ranked", "anomaly_ratio", "peak_month",
             "peak_month_cell_days", "season_start_month", "season_midpoint_month", "season_end_month", "season_length_months",
-            "months_available", "is_complete", "method", "harmonized_low", "harmonized_high", "months_insufficient"]
+            "months_available", "is_complete", "method", "harmonized_low", "harmonized_high", "months_insufficient", "is_partial"]
 ann = ann[ANN_COLS]
 for c_ in ["season_start_month", "season_midpoint_month", "season_end_month", "season_length_months"]:
     ann[c_] = ann[c_].astype("Int64")
@@ -383,7 +388,8 @@ con.register("ann", ann)
 copy("SELECT * FROM ann ORDER BY region_id, year", "gold_region_annual")
 
 # ---------------- 8. headline ----------------
-last = rm[rm.is_complete].month_start.max()
+last = rm[rm.is_complete & (rm.method != "provisional_nrt")].month_start.max()
+prov_last = rm[rm.method == "provisional_nrt"].month_start.max()
 hl = []
 for rid, (name, _) in REGIONS.items():
     g = rm[rm.region_id == rid]
@@ -398,12 +404,16 @@ for rid, (name, _) in REGIONS.items():
                 f"rank {int(row.rank_in_month)} of {int(row.n_years_ranked)}.")
     else:
         head = f"{mname} {last.year}{prov}: no usual level to compare against."
+    prow = g[g.month_start == prov_last].iloc[0]
     alt = (f"{name} in {mname} {last.year} has {row.harmonized:,.0f} VIIRS-equivalent fire detections. {head} "
-           f"Year to date: {ytd / ytd_med:.1f}x the {BASE_DEFAULT[0]}-{BASE_DEFAULT[1]} median for January to {mname}.")
+           f"Year to date: {ytd / ytd_med:.1f}x the {BASE_DEFAULT[0]}-{BASE_DEFAULT[1]} median for January to {mname}. "
+           f"Latest month, {calendar.month_name[prov_last.month]} {prov_last.year}, is provisional: {prow.harmonized:,.0f} detections so far, "
+           f"not yet compared with earlier years.")
     hl.append(dict(region_id=rid, as_of_month=last.date(), headline=head, alt_text=alt,
                    month_anomaly_ratio=round(row.anomaly_ratio, 3), month_rank_in_month=row.rank_in_month,
                    ytd_cell_days=round(ytd, 1), ytd_vs_median=round(ytd / ytd_med, 3) if ytd_med else None,
-                   top_analog_year=None, method=row.method, region_name=name))
+                   top_analog_year=None, method=row.method, region_name=name,
+                   latest_provisional_month=prov_last.date(), latest_provisional_value=round(prow.harmonized, 1)))
 hl = pd.DataFrame(hl)
 hl["month_rank_in_month"] = hl.month_rank_in_month.astype("Int64")
 hl["top_analog_year"] = hl.top_analog_year.astype("Int64")
@@ -436,25 +446,20 @@ con.register("relo", relo)
 copy("SELECT * FROM relo", "gold_reliability")
 
 acc = pd.DataFrame([
-    ("median_monthly_error_pct", 100 * E1S["mdape"], "%", "Half of the converted months were within {v:.0f}% of what VIIRS actually measured."),
-    ("p90_monthly_error_pct", 100 * E1S["p90"], "%", "Nine converted months in ten were within {v:.0f}% of the VIIRS measurement."),
-    ("worst_annual_error_pct", 100 * E1S["annual_max"], "%", "Converted annual totals were never more than {v:.0f}% off."),
-    ("mean_bias_pct", 100 * E1S["bias"], "%", "On average the conversion came out {a:.0f}% {d} than VIIRS in the test years."),
+    ("median_monthly_error_pct", 100 * E1S["mdape"], "%", "Half of the converted months were within {v:.1f}% of what VIIRS actually measured."),
+    ("p90_monthly_error_pct", 100 * E1S["p90"], "%", "Nine converted months in ten were within {v:.1f}% of the VIIRS measurement."),
+    ("worst_annual_error_pct", 100 * E1S["annual_max"], "%", "Converted annual totals were never more than {v:.1f}% off."),
+    ("mean_bias_pct", 100 * E1S["bias"], "%", "On average the conversion came out {a:.1f}% {d} than VIIRS in the test years."),
     ("likely_range_coverage_pct", 100 * E1S["coverage"], "%", "The likely range contained the true VIIRS value in {v:.0f}% of test months."),
     ("likely_range_low_pct", 100 * (BAND[0] - 1), "%", "At country scale the true value is likely (about 85% chance) to be no more than {v:.0f}% below the converted value."),
     ("likely_range_high_pct", 100 * (BAND[1] - 1), "%", "At country scale the true value is likely (about 85% chance) to be no more than {v:.0f}% above the converted value."),
-    ("anomaly_agreement_country_pct", 96, "%", "On the fit years (2012-2019, so not held out), converted MODIS and VIIRS put the month in the same class (below, normal, above) {v:.0f}% of the time for all of Argentina."),
-    ("anomaly_agreement_zone_pct", 85, "%", "For large regions (about a quarter of the country) they agree {v:.0f}% of the time."),
-    ("anomaly_agreement_block_pct", 71, "%", "For 2-degree blocks (about 200 km) they agree only {v:.0f}% of the time."),
-    ("anomaly_agreement_app_classes_pct", 100 * agree5, "%", "Using the calendar's five colour classes, converted and measured months matched {v:.0f}% of the time (country, test years)."),
+    ("anomaly_agreement_country_pct", 100 * agree5, "%", "Using the calendar's five colour classes, converted and measured months matched {v:.0f}% of the time (whole country, held-out years)."),
 ], columns=["metric", "value", "unit", "statement"])
 acc["statement"] = [s.format(v=abs(v) if "low_pct" in m else v, a=abs(v), d="lower" if v < 0 else "higher")
                     for m, v, s in zip(acc.metric, acc.value, acc.statement)]
 acc["value"] = acc.value.astype(float).round(1)
-HELD = "2020-01 to 2022-12 (held out; factors fitted on 2012-2019)"
-INSAMPLE = "2012-2019 (IN SAMPLE: the fit years, not held out)"
-acc["test_period"] = [INSAMPLE if m.startswith("anomaly_agreement_") and m.endswith(("country_pct", "zone_pct", "block_pct")) else HELD for m in acc.metric]
-acc["source"] = ["E1 test"] * 7 + ["findings_log section 3 (3 classes p25/p75)"] * 3 + ["E1 test"]
+acc["test_period"] = "2020-01 to 2022-12 (held out; factors fitted on 2012-2019)"
+acc["source"] = "E1 test (11_method_test.py, 14_build_gold.py)"
 acc["method_version"] = METHOD_VERSION
 acc["computed_at"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 con.register("acc", acc)
@@ -475,9 +480,10 @@ P(f"check: NaN values in region table (must be 0, nulls are fine): {nn}")
 (HERE / "data" / "14_build_gold.txt").write_text("\n".join(log) + "\n", encoding="utf-8")
 
 if "--upload" in sys.argv:
-    import boto3
-    s3 = boto3.client("s3", endpoint_url=f"https://{os.environ['CF_ACCOUNT_ID']}.r2.cloudflarestorage.com",
-                      aws_access_key_id=os.environ["R2_KEY_ID"], aws_secret_access_key=os.environ["R2_SECRET"], region_name="auto")
+    # Upload through DuckDB (own TLS handling; boto3 fails on networks that re-sign HTTPS). Re-writes each Parquet file.
+    import os as _os
+    con.sql(f"""CREATE OR REPLACE SECRET r2 (TYPE r2, KEY_ID '{_os.environ["R2_KEY_ID"]}',
+        SECRET '{_os.environ["R2_SECRET"]}', ACCOUNT_ID '{_os.environ["CF_ACCOUNT_ID"]}')""")
     for p in sorted(GOLD.glob("*.parquet")):
-        s3.upload_file(str(p), "firms-data", f"gold/{p.name}")
+        con.sql(f"COPY (SELECT * FROM read_parquet('{p.as_posix()}')) TO 'r2://firms-data/gold/{p.name}' (FORMAT parquet, COMPRESSION zstd)")
         print(f"uploaded gold/{p.name}")

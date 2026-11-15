@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Draw an area</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow">Your own area</p>
+      <h1>Draw an area, get its calendar</h1>
+      <p class="lede">Draw a rectangle or a shape on the map of Argentina. We add up the fire detections of every map cell whose centre falls inside it and show the same calendar as the regions page, with a reliability flag for your area.</p>
+      <p class="banner" id="data-banner" data-source="offline"></p>
+    </div>
+
+    <section class="card">
+      <div class="draw-tools">
+        <button type="button" class="btn small secondary" id="tool-rect" aria-pressed="false">Draw rectangle</button>
+        <button type="button" class="btn small secondary" id="tool-poly" aria-pressed="false">Draw polygon</button>
+        <button type="button" class="btn small ghost" id="tool-finish" hidden>Finish polygon</button>
+        <button type="button" class="btn small ghost" id="tool-clear">Clear</button>
+        <span class="toolbar-label" style="margin-left:0.6rem">Examples</span>
+        <div class="chips" id="examples"></div>
+      </div>
+      <p class="small muted" id="tool-help">Choose a tool, then drag on the map (rectangle) or click corners and press Finish (polygon). The map cells are about 1 degree (roughly 100 km) wide.</p>
+      <div id="draw-map" role="application" aria-label="Map of Argentina. Draw an area."></div>
+      <form class="field-row" id="coords" aria-label="Type rectangle corners">
+        <label>South <input type="number" step="0.1" name="south" value="-34.5"></label>
+        <label>North <input type="number" step="0.1" name="north" value="-32.1"></label>
+        <label>West <input type="number" step="0.1" name="west" value="-61"></label>
+        <label>East <input type="number" step="0.1" name="east" value="-58.4"></label>
+        <button type="submit" class="btn small secondary">Use these corners</button>
+        <label>From <select id="year-from" aria-label="From year"></select></label>
+        <label>to <select id="year-to" aria-label="To year"></select></label>
+      </form>
+      <p class="notice" id="resolution-note"><strong>Resolution limit:</strong> the data is summed over 1-degree cells (about 100 km). A shape smaller than one cell uses the whole cell, and before 2012 it is flagged "indicative only", not hidden.</p>
+    </section>
+
+    <div id="result" hidden>
+      <div class="stat-row" id="area-stats" style="margin-top:1rem"></div>
+      <div class="grid split" style="margin-top:1rem">
+        <section class="card" aria-label="Calendar for your area">
+          <div class="card-head"><div><h2>Calendar for your area</h2><p class="card-sub" id="cal-sub"></p></div>
+            <button type="button" class="btn secondary small" id="csv"><span data-icon="download" data-size="16"></span>Download CSV</button></div>
+          <div id="calendar"></div>
+          <div id="cal-key"></div>
+          <p class="caption"><strong>What to notice:</strong> the same colours as the regions page, computed for your shape. Usual = median of the same calendar month over 2003 to 2022 in your area. Hatched squares before 2012 are converted from MODIS, and their flag depends on how many MODIS detections your area has.</p>
+        </section>
+        <aside class="card detail-card sticky" id="detail" aria-live="polite"></aside>
+      </div>
+      <section class="card" style="margin-top:1rem">
+        <h2>Series for your area</h2>
+        <div id="series" style="min-height:300px"></div>
+        <p class="caption"><strong>What to notice:</strong> the shaded band before 2012 is the likely range for your area's size. Small areas have wide bands.</p>
+      </section>
+    </div>
+
+    <p class="doc-links"><span id="doc-approach"></span><span id="doc-scope"></span><a href="accuracy.html">How accurate is this?</a><a href="regions.html">Curated regions</a></p>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="mvp.js"></script>
+  <script src="draw.js"></script>
+</body>
+</html>

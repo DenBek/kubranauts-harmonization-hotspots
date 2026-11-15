@@ -235,3 +235,7 @@ tmp_silver/
 
 # DuckDB spill dir (notebooks)
 tmp_ml/
+
+# Throwaway screenshots and patch scripts from local page checks
+tmp_*.png
+tmp_*.py

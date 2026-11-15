@@ -1,0 +1,86 @@
+/* Styles for the four MVP pages (problem, regions, draw, accuracy). Load after styles.css. Uses its tokens. */
+
+.mvp-wrap { display: grid; gap: 1rem; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.9rem 1rem; box-shadow: var(--shadow); }
+.stat .stat-label { font-size: 0.82rem; color: var(--muted); }
+.stat .stat-value { font-size: 1.75rem; font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.15; margin: 0.15rem 0; }
+.stat .stat-sub { font-size: 0.85rem; color: var(--ink-2); margin: 0; }
+.stat .stat-scope { display: inline-block; margin-top: 0.4rem; font-size: 0.74rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+.stat .stat-scope.in-sample { background: var(--pill-sample-bg); color: var(--pill-sample-ink); border-color: transparent; }
+.stat.bad .stat-value { color: var(--c-much-above); }
+
+.caption { margin: 0.7rem 0 0; font-size: 0.92rem; color: var(--ink-2); max-width: 80ch; }
+.caption strong { color: var(--ink); }
+
+/* method badges */
+.badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.76rem; font-weight: 650; padding: 0.12rem 0.55rem; border-radius: 999px; border: 1px solid var(--line-strong); white-space: nowrap; }
+.badge i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.badge.observed_viirs i { background: var(--s-viirs); }
+.badge.modelled_aqua i { background: repeating-linear-gradient(45deg, var(--s-modis) 0 2px, transparent 2px 4px); border: 1px solid var(--s-modis); }
+.badge.provisional_nrt { border-style: dashed; }
+.badge.provisional_nrt i { border: 1.5px dashed var(--ink-2); background: transparent; }
+.badge.insufficient_data i { border: 1.5px solid var(--muted); background: transparent; }
+.badge.flag-reliable { background: var(--pill-live-bg); color: var(--pill-live-ink); border-color: transparent; }
+.badge.flag-good { background: var(--pill-live-bg); color: var(--pill-live-ink); border-color: transparent; }
+.badge.flag-caution { background: var(--pill-sample-bg); color: var(--pill-sample-ink); border-color: transparent; }
+.badge.flag-indicative_only { background: var(--c-much-above); color: #fff; border-color: transparent; }
+
+/* SVG charts and calendar */
+.mvp-chart { width: 100%; }
+.mvp-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.mvp-chart text { font-family: var(--font); fill: var(--muted); font-size: 11px; }
+.mvp-chart .axis { stroke: var(--axis); }
+.mvp-chart .gridline { stroke: var(--grid); }
+.cal-cell { cursor: pointer; }
+.cal-cell:focus-visible { outline: none; }
+.cal-cell:focus-visible rect.cal-box, .cal-cell.selected rect.cal-box { stroke: var(--ink); stroke-width: 2; }
+.cal-cell text { fill: var(--ink); font-size: 10px; font-weight: 700; pointer-events: none; }
+.cal-cell .prov rect, rect.prov-box { fill: var(--surface-2); stroke: var(--ink-2); stroke-dasharray: 3 2; stroke-width: 1.4; }
+.hatch-line { stroke: var(--ink); stroke-opacity: 0.55; stroke-width: 1.2; }
+
+.key-row { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; align-items: center; margin-top: 0.8rem; font-size: 0.85rem; color: var(--ink-2); }
+.key-row .k { display: inline-flex; align-items: center; gap: 0.4rem; }
+.key-row svg { flex: none; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.field-row { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; margin: 0.6rem 0; }
+.field-row label { font-size: 0.85rem; color: var(--muted); display: inline-flex; align-items: center; gap: 0.4rem; }
+.field-row select, .field-row input[type="number"] { font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.field-row input[type="number"] { width: 6.5rem; }
+
+.detail-card h2 { margin: 0.2rem 0 0.4rem; }
+.detail-card .big { font-size: 2rem; font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.detail-card .big .unit { font-size: 0.9rem; font-weight: 500; color: var(--muted); margin-left: 0.4rem; }
+.detail-card dl { margin: 0.8rem 0 0; display: grid; gap: 0.55rem; }
+.detail-card dt { font-size: 0.78rem; color: var(--muted); }
+.detail-card dd { margin: 0.05rem 0 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.detail-card dd.help { font-weight: 400; font-size: 0.84rem; color: var(--ink-2); }
+.notice { border-left: 3px solid var(--ink-2); background: var(--surface-2); padding: 0.55rem 0.8rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.88rem; margin: 0.6rem 0; }
+.notice.provisional { border-left-style: dashed; }
+.notice.warn { border-left-color: var(--c-much-above); }
+
+.rank-list { list-style: none; margin: 0; padding: 0; counter-reset: rk; display: grid; gap: 0.3rem; }
+.rank-list li { display: flex; gap: 0.6rem; align-items: center; justify-content: space-between; padding: 0.3rem 0.5rem; border-radius: 8px; background: var(--surface-2); font-size: 0.9rem; cursor: pointer; }
+.rank-list li:hover { background: var(--surface-3); }
+.rank-list .nm { font-weight: 650; }
+.rank-list .vl { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+
+.rel-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.rel-table th, .rel-table td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rel-table th { font-size: 0.78rem; color: var(--muted); font-weight: 650; }
+.rel-table td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.three-boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+.three-boxes .card ul { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.92rem; }
+.three-boxes .card li { margin: 0.25rem 0; }
+
+#draw-map { height: 460px; border-radius: var(--radius); border: 1px solid var(--line); }
+.draw-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.6rem; }
+.img-card img { max-width: 100%; height: auto; border-radius: var(--radius-sm); background: #fff; }
+.doc-links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; margin: 0.4rem 0 0; font-size: 0.92rem; }
+
+@media (max-width: 800px) {
+  .detail-card .big { font-size: 1.6rem; }
+  #draw-map { height: 340px; }
+}

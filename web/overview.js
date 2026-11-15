@@ -95,7 +95,7 @@ function renderKpis(region, headline, row, when, mine) {
   if (!headline) return;
 
   kpi(term("anomaly-ratio", "This month vs usual"), formatRatio(headline.month_anomaly_ratio), null,
-    "This month's cell-days divided by the usual value for that month. Above 1 means a busier month than the historical middle. The dot is this month, the band is the middle half of past years, the line is the usual month.",
+    "This month's detections divided by the usual value for that month. Above 1 means a busier month than the historical middle. The dot is this month, the band is the middle half of past years, the line is the usual month.",
     function (viz) {
       if (row) bullet(viz, { lo: row.baseline_p25, hi: row.baseline_p75, median: row.baseline_median, value: row.harmonized_cell_days, color: classColor(row.anomaly_class) });
     });
@@ -106,8 +106,8 @@ function renderKpis(region, headline, row, when, mine) {
     function (viz) { miniColumns(viz, sameMonth.map(function (r) { return { key: r.year, label: String(r.year), value: r.harmonized_cell_days, cls: r.anomaly_class }; }), when ? when.year : null); });
 
   var thisYear = when ? mine.filter(function (r) { return r.year === when.year && r.month <= when.month; }) : [];
-  kpi(term("year-to-date", "Year to date"), formatCompact(headline.ytd_cell_days), "cell-days",
-    "Harmonized cell-days from January through the latest month (" + formatNumber(headline.ytd_cell_days) + "). One hot month can sit inside an otherwise ordinary year, so the running total is the check.",
+  kpi(term("year-to-date", "Year to date"), formatCompact(headline.ytd_cell_days), "detections",
+    "Harmonized detections from January through the latest month (" + formatNumber(headline.ytd_cell_days) + "). One hot month can sit inside an otherwise ordinary year, so the running total is the check.",
     function (viz) {
       var values = [];
       var titles = [];
@@ -116,7 +116,7 @@ function renderKpis(region, headline, row, when, mine) {
         values.push(r ? r.harmonized_cell_days : null);
         titles.push(when ? monthLabel(when.year, m) : MONTHS[m - 1]);
       }
-      sparkline(viz, { values: values, titles: titles, label: "Cell-days", markIndex: when ? when.month - 1 : null });
+      sparkline(viz, { values: values, titles: titles, label: "Detections", markIndex: when ? when.month - 1 : null });
     });
 
   kpi(term("year-to-date", "Year to date vs usual"), formatRatio(headline.ytd_vs_median), null,
@@ -136,7 +136,7 @@ function renderKpis(region, headline, row, when, mine) {
       if (!top) return;
       viz.appendChild(el("div", { class: "analog" }, [
         el("div", { class: "sim" }, [el("i", { style: "width:" + Math.round(top.similarity_pct) + "%" })]),
-        el("div", { class: "small muted", text: "After " + MONTHS[top.through_month - 1] + ", " + top.analog_year + " added " + formatCompact(top.analog_rest_of_year_cell_days) + " cell-days (" + formatRatio(top.analog_rest_vs_median) + " usual)." }),
+        el("div", { class: "small muted", text: "After " + MONTHS[top.through_month - 1] + ", " + top.analog_year + " added " + formatCompact(top.analog_rest_of_year_cell_days) + " detections (" + formatRatio(top.analog_rest_vs_median) + " usual)." }),
       ]));
     });
 }
@@ -150,11 +150,11 @@ function miniColumns(host, items, selectedKey) {
     var fill = classColor(d.cls);
     var bar = el("span", {
       tabindex: "0",
-      "aria-label": d.label + ": " + formatNumber(d.value) + " cell-days, " + (CLASS_LABEL[d.cls] || "") + " usual",
+      "aria-label": d.label + ": " + formatNumber(d.value) + " detections, " + (CLASS_LABEL[d.cls] || "") + " usual",
       style: "flex:1;min-width:4px;height:" + Math.max(6, (38 * (d.value || 0)) / max) + "px;border-radius:3px 3px 0 0;background:" + fill + ";" + (selected ? "box-shadow:0 0 0 2px var(--ink);" : "opacity:0.75;"),
     });
     var content = function () {
-      return { title: d.label, rows: [{ label: "Cell-days", value: formatNumber(d.value), color: fill, kind: "box" }, { label: "Class", value: CLASS_LABEL[d.cls] || "–" }] };
+      return { title: d.label, rows: [{ label: "Detections", value: formatNumber(d.value), color: fill, kind: "box" }, { label: "Class", value: CLASS_LABEL[d.cls] || "–" }] };
     };
     bar.addEventListener("pointermove", function (event) { Tip.show(content(), event.clientX, event.clientY); });
     bar.addEventListener("pointerleave", Tip.hide);
@@ -224,7 +224,7 @@ function renderSeason(region, mine, when) {
   if (compareYear) series.push({ name: String(compareYear), values: valuesFor(compareYear), color: "--s-modis", dashed: true });
 
   document.getElementById("season-sub").textContent = year
-    ? "Harmonized cell-days in " + year + " against the usual month (dashed) and the normal range (shaded). Click a month to open it in the calendar."
+    ? "Harmonized detections in " + year + " against the usual month (dashed) and the normal range (shaded). Click a month to open it in the calendar."
     : "";
 
   lineBandChart(document.getElementById("season-chart"), {
@@ -234,7 +234,7 @@ function renderSeason(region, mine, when) {
     median: median,
     series: series,
     selectedIndex: when ? when.month - 1 : null,
-    ariaLabel: "Monthly harmonized cell-days for " + regionName(region),
+    ariaLabel: "Monthly harmonized detections for " + regionName(region),
     onPick: function (i) {
       if (!year) return;
       location.href = "calendar.html?region=" + encodeURIComponent(region) + "&year=" + year + "&month=" + (i + 1);
@@ -274,13 +274,13 @@ function renderLast12(region, mine) {
     var button = el("button", {
       type: "button",
       style: "background:" + fill + ";color:" + textOn(fill),
-      "aria-label": monthLabel(r.year, r.month) + ": " + (CLASS_LABEL[r.anomaly_class] || "") + " usual, " + formatNumber(r.harmonized_cell_days) + " cell-days",
+      "aria-label": monthLabel(r.year, r.month) + ": " + (CLASS_LABEL[r.anomaly_class] || "") + " usual, " + formatNumber(r.harmonized_cell_days) + " detections",
     }, [MONTHS_SHORT[r.month - 1], el("br"), el("span", { style: "font-weight:500;opacity:0.85", text: "'" + String(r.year).slice(2) })]);
     var content = function () {
       return {
         title: monthLabel(r.year, r.month),
         rows: [
-          { label: "Cell-days", value: formatNumber(r.harmonized_cell_days), color: fill, kind: "box" },
+          { label: "Detections", value: formatNumber(r.harmonized_cell_days), color: fill, kind: "box" },
           { label: "Compared with usual", value: formatRatio(r.anomaly_ratio) },
           { label: "Rank", value: r.rank_in_month + " of " + r.n_years_ranked },
         ],

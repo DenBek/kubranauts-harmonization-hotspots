@@ -6,12 +6,15 @@
 (function () {
   // "index" is the home page, which is the map.
   var PAGES = [
+    ["problem", "The Problem"],
+    ["regions", "Regions"],
+    ["draw", "Draw an Area"],
+    ["accuracy", "How Accurate Is This?"],
     ["index", "Map"],
-    ["overview", "Overview"],
     ["calendar", "Calendar"],
-    ["year", "Year"],
-    ["briefing", "Briefing"],
     ["glossary", "Terms"],
+    // Hidden from the nav (still in the repo): overview, year and briefing depend on the analogs table, which the
+    // Argentina MVP does not produce, or on SMS preview copy. See harmonization/argentina/SCOPE_AND_GAPS.md.
   ];
   var THEME_KEY = "fire-calendar-theme";
 

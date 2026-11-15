@@ -94,15 +94,15 @@ We scored each on three questions (`findings_log.md` §3):
 
 - *Residual spread:* after applying the best monthly factor, how much is left unexplained? Lower is better.
 - *Slope:* on a log-log plot, is the relation a straight line of slope 1? A slope of 1 means a plain scale factor is the right correction.
-- *Anomaly agreement:* does converted MODIS put a month in the same class (below normal, normal, above normal) as measured VIIRS?
+- *Anomaly agreement:* does converted MODIS put a month in the same class (below normal, normal, above normal) as measured VIIRS? (Counts also scored best on this on the selection years; those agreement figures are in `findings_log.md` §3 and are in-sample, so we do not quote them here.)
 
-| Whole country, day+night | Residual spread | Slope | Same anomaly class |
-|---|---|---|---|
-| **Detection count** | **0.095** | **0.99** | **96%** |
-| FRP | 0.173 | 0.87 | 83% |
-| Active cell-days (0.1°) | 0.136 | 0.85 | 85% |
+| Whole country, day+night | Residual spread | Slope |
+|---|---|---|
+| **Detection count** | **0.095** | **0.99** |
+| FRP | 0.173 | 0.87 |
+| Active cell-days (0.1°) | 0.136 | 0.85 |
 
-(`findings_log.md` §3; agreement is measured on the same 2012 to 2019 years used to pick the method, so it is an in-sample figure; see section 6.) Counts won at country and zone scale. At 2-degree blocks cell-days had a slightly lower residual (0.498 against 0.552), but no quantity converts well at that size: in 13% of block-months Aqua saw nothing while VIIRS saw fire. FRP is heavy-tailed: a few huge detections dominate a month's total. Cell-days saturate: in a big month VIIRS adds fewer new cells per MODIS cell, so a constant factor would overestimate extremes. We therefore chose the plain **count of fire detections, day and night, per month**, expressed in **VIIRS-equivalent units**: "how many hotspots one VIIRS satellite would have reported." That makes the unit easy to explain, and VIIRS is the camera that continues into the future, because MODIS is due to stop in 2027 (`../../docs/harmonization_data_brief.md` §2).
+(`findings_log.md` §3.) Counts won at country and zone scale. At 2-degree blocks cell-days had a slightly lower residual (0.498 against 0.552), but no quantity converts well at that size: in 13% of block-months Aqua saw nothing while VIIRS saw fire. FRP is heavy-tailed: a few huge detections dominate a month's total. Cell-days saturate: in a big month VIIRS adds fewer new cells per MODIS cell, so a constant factor would overestimate extremes. We therefore chose the plain **count of fire detections, day and night, per month**, expressed in **VIIRS-equivalent units**: "how many hotspots one VIIRS satellite would have reported." That makes the unit easy to explain, and VIIRS is the camera that continues into the future, because MODIS is due to stop in 2027 (`../../docs/harmonization_data_brief.md` §2).
 
 Our project brief had suggested that FRP and cell-days might calibrate better than counts. In Argentina they did not (`findings_log.md` §X).
 
@@ -186,7 +186,7 @@ Half of the converted months were within 9.5% of the measurement, nine out of te
 - *Possible gas flares.* Refitting without the Vaca Muerta area changes the factors by 1.7% on average (at most 3.2%), and the test errors are unchanged (median error 9.4% against 9.5%). We kept the data as is. Removing every cell active on 200 or more days takes out 31% of VIIRS (mostly real farm fires) and gives mixed results, so it is not recommended.
 - *Day only.* Using daytime detections alone gives a median error of 8.7% against 9.5%, but worse 90th-percentile (21.5% against 19.0%) and annual (9.5% against 8.9%) errors. Day plus night stays the default.
 
-**Anomaly agreement.** Converted MODIS and measured VIIRS put a month in the same three-way class 96% of the time for the whole country, 85% for the four large zones, and only 71% for 2-degree blocks (`findings_log.md` §3). Those figures were computed on the 2012 to 2019 fit years, so they are **in-sample** and probably flatter the method. On the held-out years 2020 to 2022, using the app's own five classes, the country-level agreement is 89% (`data/14_build_gold.txt`). We quote 89% as the honest number for the country.
+**Anomaly agreement.** On the held-out years 2020 to 2022, using the calendar's own five colour classes, converted MODIS and measured VIIRS put a month in the same class 89% of the time for the whole country (`data/14_build_gold.txt`, `gold_accuracy`). Agreement is lower for smaller areas, which is what the reliability flags in section 7 are for. Earlier agreement figures from the selection years (`findings_log.md` §3) are in-sample and are not quoted here.
 
 ![Validation](plots/pitch_3_validation.png)
 *What to notice: on years the factors never saw (dark points and the dashed line), converted MODIS follows measured VIIRS closely, but stays slightly low. The shaded band is the likely range explained in the next section.*
@@ -214,7 +214,7 @@ The flag follows the half-width of the range: up to 30% is *reliable*, up to 40%
 ![Uncertainty against area size](plots/pitch_4_uncertainty.png)
 *What to notice: the bars (likely range) shrink quickly as the area contains more MODIS detections. Below about 50 detections the converted value is only a rough indication.*
 
-**What the user sees.** Modelled months are drawn differently from measured ones, each value comes with its range, the reliability flag appears with a plain suggestion (for example "select a larger area or use the seasonal or annual view"), and the accuracy panel states the test results in sentences. [PENDING: these are specified in the data (`gold/README.md`) but the web app has not yet been updated to show them; see SCOPE_AND_GAPS.md.]
+**What the user sees.** Modelled months are drawn differently from measured ones, each value comes with its range, the reliability flag appears with a plain suggestion (for example "select a larger area or use the seasonal or annual view"), and the accuracy panel states the test results in sentences. The app shows all of this on four pages: [The Problem](../../web/problem.html) (raw against harmonized), [Regions](../../web/regions.html) (calendar per region with the flags, ranges and baseline toggle), [Draw an Area](../../web/draw.html) (the same for a shape you draw, with the flag computed from the area's MODIS count) and [How Accurate Is This?](../../web/accuracy.html) (the test results and the reliability table). In the calendar, converted months are hatched, measured months are solid, and a small marker shows "!" for caution and "?" for indicative only. Provisional months and the month in progress show their value with a dashed outline and a "P", and no colour, percentage or rank, because near-real-time data can still change. Local preview: `python scripts/dev_server.py` or `npx wrangler pages dev web`.
 
 ---
 
@@ -227,7 +227,7 @@ We would rather say this directly than leave a reader to find it.
 - **MODIS processing changed.** The FIRMS files label MODIS data version 6.2 up to 2017, 6.03 for 2018 to 2022, and 61.03 for 2023 to 2025. The VIIRS-to-Aqua ratio is 6.6% higher in 2018 to 2022 than in 2012 to 2017, but we found no step at 2018 itself, so there is no clear evidence of an algorithm change. We have not checked this against FIRMS documentation (`findings_log.md` §4a). Open.
 - **Gas flares.** Some oil and gas flares in the west are probably counted as vegetation fires, which inflates VIIRS slightly there. The effect on the factors is under 3% and we made no correction.
 - **Fit set size.** Only eight years went into the factors, and 2020 was an extreme fire year. The factors are weakest in quiet months (April to June); the test error is largest there (for example about 10.8% in April against 3.1% in September; `gold/gold_calibration.parquet`, based on only three test months each).
-- **Near-real-time data.** The newest months (August 2026 onwards) are provisional. October 2026 comes out at about one fifth of a usual October (ratio 0.19, lowest of 24 Octobers). Aqua, Terra and NOAA-20 all show an exceptionally low October when counted independently of our country labels, so it looks real, but science-quality data has not replaced it yet. [Unverified in the repo: this cross-check was done interactively and is only summarised in MVP_LOG.md.]
+- **Near-real-time data.** The newest months (August 2026 onwards) are provisional and get no comparison with earlier years. October 2026 is very low (about one fifth of a usual October after harmonization). We tested whether that is a data-coverage artefact (`16_october_check.py`, `data/16_october_check.txt`). It is not: all three satellites that report in October have all 31 days of valid data, and each shows detections per valid day below every earlier October (MODIS Aqua 31 against a past minimum of 45 and a median of 130; Terra 16 against 31 and 93; NOAA-20 144 against 262 and 561). September 2026, also near-real-time, is above September 2025, so near-real-time data is not low across the board. Verdict: a real low, on provisional data that can still be revised when science-quality data arrives. We cannot rule out a processing effect that is specific to NRT October data.
 - **Zones are rough.** The sub-regions are latitude-longitude boxes, not provinces or ecosystems.
 - **Only Argentina.** We have not shown the same method works elsewhere.
 
