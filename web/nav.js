@@ -4,13 +4,16 @@
 // A new page needs one entry in PAGES below.
 
 (function () {
+  // [page, label, mode]. The home page (index) is the map; "Draw an area" opens it with the drawing tools
+  // (draw.html forwards there too).
   var PAGES = [
+    ["index", "Map", "explore"],
     ["problem", "The problem"],
     ["regions", "Fire calendar"],
-    ["draw", "Draw an area"],
+    ["index", "Draw an area", "draw"],
     ["accuracy", "How accurate is it?"],
     ["glossary", "Words used"],
-    // The old Map page lives at map-old.html (no nav entry): converted and measured months look the same there.
+    // The old Map page lives at map-old.html (no nav entry).
     // Hidden from the nav (still in the repo): overview, year and briefing depend on the analogs table, which the
     // Argentina MVP does not produce, or on SMS preview copy. See harmonization/argentina/SCOPE_AND_GAPS.md.
   ];
@@ -25,7 +28,7 @@
   header.innerHTML =
     "<a class='skip-link' href='#main'>Skip to content</a>" +
     "<div class='bar'>" +
-    "  <a class='brand' href='problem.html'>" +
+    "  <a class='brand' href='index.html'>" +
     "    <span class='brand-mark'>" + icon("flame", 18) + "</span>" +
     "    <span class='brand-text'>Fire Calendar<small>Team Kubranauts · NASA Space Apps</small></span>" +
     "  </a>" +
@@ -38,14 +41,28 @@
     "</div>";
 
   var nav = document.getElementById("site-nav");
+  function currentMode() {
+    var m = new URLSearchParams(location.search).get("mode");
+    return m === "draw" || m === "region" ? m : "explore";
+  }
+  function markCurrent() {
+    nav.querySelectorAll("a").forEach(function (link) {
+      var on = link.dataset.page === path && (!link.dataset.mode || link.dataset.mode === (currentMode() === "draw" ? "draw" : "explore"));
+      if (on) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  }
   PAGES.forEach(function (page) {
     var link = document.createElement("a");
-    link.href = page[0] + ".html";
+    link.href = page[0] + ".html" + (page[2] === "draw" ? "?mode=draw" : "");
     link.dataset.page = page[0];
+    if (page[2]) link.dataset.mode = page[2];
     link.textContent = page[1];
-    if (page[0] === path) link.setAttribute("aria-current", "page");
     nav.appendChild(link);
   });
+  markCurrent();
+  // The map page switches modes without reloading; keep the highlighted link in step.
+  document.addEventListener("paramschange", markCurrent);
 
   // No header region picker: only the Fire calendar page has regions, and it has its own buttons. Nav links carry no ?region=.
 

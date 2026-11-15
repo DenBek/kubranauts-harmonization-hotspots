@@ -165,6 +165,9 @@
 
 html { -webkit-text-size-adjust: 100%; }
 
+/* The hidden attribute always wins, even over components that set display (buttons, chips). */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -983,10 +986,10 @@ dl.metric.compact .metric-help { display: none; }
 }
 .timeline-buttons { display: flex; gap: 0.3rem; }
 .timeline-track { display: grid; gap: 0.25rem; min-width: 0; }
-.timeline-bars { display: flex; align-items: flex-end; gap: 2px; height: 34px; }
+.timeline-bars { display: flex; align-items: flex-end; gap: 1px; height: 34px; overflow: hidden; }
 .timeline-bars button {
-  flex: 1;
-  min-width: 3px;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 0;
   border: 0;
   border-radius: 3px 3px 0 0;
@@ -1038,6 +1041,189 @@ dl.metric.compact .metric-help { display: none; }
 }
 .leaflet-tooltip.cell-tip::before { display: none; }
 .drawing #map, .drawing .leaflet-container { cursor: crosshair !important; }
+/* While a drawing tool is on, clicks go to the map, not to the cells under the pointer. */
+.drawing .leaflet-overlay-pane path.map-cell { pointer-events: none; }
+.leaflet-overlay-pane path.map-cell { transition: fill-opacity 160ms ease; }
+
+/* ---------- home: map + calendar side by side ----------
+   Head (the answer in one sentence), toolbar, map and timeline on the left; the calendar column on the right.
+   Colour rule on this page: the class colours and sensor colours are for data only; selections and controls are ink. */
+
+.home-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(380px, 34vw, 520px);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "head side" "tools side" "map side" "time side";
+  height: calc(100vh - var(--header-h));
+  height: calc(100dvh - var(--header-h));
+  min-height: 640px;
+}
+.home-head {
+  grid-area: head;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.6rem 1.2rem;
+  padding: 1rem 1.25rem 0.6rem;
+}
+.home-head-text { min-width: 0; flex: 1 1 340px; }
+.home-head .eyebrow { margin: 0 0 0.15rem; }
+.home-head h1 { font-size: clamp(1.35rem, 2.1vw, 1.9rem); line-height: 1.15; margin: 0; letter-spacing: -0.02em; }
+.home-head-sub { margin: 0.25rem 0 0; color: var(--ink-2); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.home-head .banner { flex-basis: 100%; margin: 0; }
+.home-toolbar { grid-area: tools; padding: 0 1.25rem 0.6rem; }
+.home-toolbar .pane { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.7rem; }
+.home-toolbar .tb-label { font-size: 0.8rem; font-weight: 650; color: var(--muted); }
+.home-toolbar .draw-tools { margin: 0; }
+.home-toolbar .tb-help, .home-toolbar .tb-hint { flex-basis: 100%; margin: 0; }
+.home-toolbar .tb-hint { flex-basis: auto; }
+.tb-more { position: relative; font-size: 0.875rem; }
+.tb-more summary { cursor: pointer; color: var(--ink-2); padding: 0.3rem 0.2rem; }
+.tb-more-body {
+  position: absolute; z-index: 600; top: 100%; left: 0; width: 300px; margin-top: 0.3rem;
+  padding: 0.8rem; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-lift);
+}
+.tb-more-body .notice { font-size: 0.8rem; margin-bottom: 0; }
+.home-map { grid-area: map; position: relative; margin: 0 1rem 0 1.25rem; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); }
+.home-shell #map { position: absolute; inset: 0; }
+.home-shell .map-legend { top: auto; right: auto; left: 0.7rem; bottom: 0.7rem; width: 210px; }
+.home-shell .timeline {
+  grid-area: time; position: static; margin: 0.6rem 1rem 1rem 1.25rem;
+  background: var(--surface); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.home-side {
+  grid-area: side;
+  display: flex; flex-direction: column; gap: 0.8rem;
+  min-height: 0; overflow-y: auto;
+  padding: 1rem 1.1rem 1.4rem;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+}
+.home-side .drawer-head h2 { font-size: 1.2rem; margin: 0; }
+.home-side .drawer-head .btn { flex: none; white-space: nowrap; }
+.home-side .stat-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; }
+.home-side .stat { padding: 0.65rem 0.75rem; box-shadow: none; }
+.home-side .stat .stat-value { font-size: 1.3rem; }
+.home-side .stat .stat-sub { font-size: 0.78rem; }
+.home-side .detail-card { padding: 0.8rem 0.9rem; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--line); }
+.home-side .detail-card dl { grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+.home-side .key-row { font-size: 0.78rem; gap: 0.35rem 0.9rem; margin-top: 0.4rem; }
+.home-side h3 { font-size: 0.95rem; margin: 0; }
+.home-side .side-section { border-top: 1px solid var(--line); padding-top: 0.8rem; }
+.home-side .side-section + .side-section { margin-top: 0.8rem; }
+.home-side .doc-links { margin: 0; }
+
+/* calm basemap: grey tiles; outside Argentina is washed out by a mask drawn in home.js */
+.home-shell .leaflet-tile-pane { filter: grayscale(1) contrast(0.9) brightness(1.04); opacity: 0.8; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .home-shell .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) grayscale(1) brightness(0.85) contrast(0.85); opacity: 0.75; }
+}
+:root[data-theme="dark"] .home-shell .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) grayscale(1) brightness(0.85) contrast(0.85); opacity: 0.75; }
+.drawing .leaflet-overlay-pane path.fire-dot { pointer-events: none; }
+
+/* proportional circles: legend */
+.map-legend .legend-title { font-size: 0.8rem; font-weight: 650; margin-bottom: 0.45rem; }
+.dot-legend { display: flex; align-items: flex-end; gap: 0.9rem; }
+.dot-ref { display: grid; justify-items: center; gap: 0.2rem; font-size: 0.74rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dot-ref svg { display: block; }
+.class-strip { display: flex; gap: 2px; margin-top: 0.6rem; }
+.class-strip i { flex: 1; height: 8px; border-radius: 2px; }
+.class-strip-labels { display: flex; justify-content: space-between; gap: 0.4rem; font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.legend-hollow { display: flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; color: var(--muted); margin-top: 0.4rem; }
+.legend-hollow svg { display: block; }
+.legend-note { font-size: 0.72rem; color: var(--muted); margin: 0.4rem 0 0; }
+
+/* neutral controls: ink for what you picked, so only data wears colour */
+.home-shell .chip:hover { border-color: var(--ink-2); }
+.home-shell .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.home-shell .btn[aria-pressed="true"] { background: var(--surface-3); color: var(--ink); border-color: var(--ink-2); }
+.home-shell .timeline-bars button { background: var(--ink-2); opacity: 0.3; }
+.home-shell .timeline-bars button.converted { background: repeating-linear-gradient(135deg, var(--ink-2) 0 2px, transparent 2px 4px); opacity: 0.45; }
+.home-shell .timeline-bars button.provisional { background: transparent; box-shadow: inset 0 0 0 1px var(--ink-2); opacity: 0.6; }
+.home-shell .timeline-bars button:hover { opacity: 0.7; }
+.home-shell .timeline-bars button[aria-current="true"] { background: var(--ink); opacity: 1; box-shadow: none; }
+.home-shell .timeline input[type="range"] { accent-color: var(--ink); }
+.home-shell #play { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.home-shell #play:hover { box-shadow: none; opacity: 0.85; }
+.home-shell .cell-list button[aria-pressed="true"] { background: var(--surface-3); color: var(--ink); }
+.home-shell .cell-list .bar-inline { background: var(--ink-2); opacity: 0.5; }
+
+@media (max-width: 1100px) {
+  .home-shell {
+    height: auto; min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
+    grid-template-areas: "head" "tools" "map" "time" "side";
+  }
+  .home-map { height: 62vh; min-height: 380px; margin: 0 1rem; }
+  .home-shell .timeline { margin: 0.6rem 1rem 0.8rem; }
+  .home-side { overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
+  .map-page main { overflow-x: hidden; }
+}
+@media (max-width: 760px) {
+  .home-head { padding: 0.8rem 0.9rem 0.5rem; }
+  .home-toolbar { padding: 0 0.9rem 0.5rem; }
+  .home-map { height: 56vh; margin: 0 0.6rem; }
+  .home-shell .map-legend { width: 170px; padding: 0.5rem 0.6rem; top: 0.6rem; right: 0.6rem; bottom: auto; left: auto; }
+  .home-shell .map-legend .legend-note, .home-shell .map-legend .legend-hollow { display: none; }
+  .home-shell .map-legend .legend-title { font-size: 0.74rem; }
+  .home-shell .timeline { margin: 0.6rem; grid-template-columns: auto 1fr; }
+  .home-shell .timeline-label { grid-column: 1 / -1; text-align: left; }
+  .home-side { padding: 0.9rem; }
+  .home-side .detail-card dl { grid-template-columns: 1fr; }
+  .tb-more-body { width: min(300px, calc(100vw - 2rem)); }
+}
+
+/* timeline: converted months hatched, provisional months outlined, like the calendar */
+.timeline-bars button.converted { background: repeating-linear-gradient(135deg, var(--r2) 0 3px, var(--r1) 3px 5px); }
+.timeline-bars button.provisional { background: transparent; box-shadow: inset 0 0 0 1px var(--ink-2); }
+.timeline-bars button[aria-current="true"] { opacity: 1; background: var(--accent); box-shadow: none; }
+
+/* calendar drawer on the home map */
+.map-drawer {
+  position: absolute;
+  z-index: 520;
+  top: 1rem; right: 4.2rem; bottom: 7.4rem;
+  width: min(660px, calc(100% - 440px - 5.2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  overflow-y: auto;
+  border-radius: var(--radius);
+  background: var(--glass);
+  -webkit-backdrop-filter: saturate(160%) blur(16px);
+  backdrop-filter: saturate(160%) blur(16px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lift);
+  animation: drawer-in 220ms ease both;
+}
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: none; }
+}
+.map-drawer[hidden] { display: none; }
+.drawer-head { display: flex; justify-content: space-between; gap: 0.8rem; align-items: flex-start; }
+.drawer-head h2 { font-size: 1.3rem; }
+.drawer-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.drawer-tools .spacer { flex: 1; }
+.map-drawer .stat-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; }
+.map-drawer .stat { padding: 0.65rem 0.75rem; box-shadow: none; }
+.map-drawer .stat .stat-value { font-size: 1.3rem; }
+.map-drawer .stat .stat-sub { font-size: 0.78rem; }
+.map-drawer .detail-card { padding: 0.8rem 0.9rem; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); }
+.map-drawer .detail-card dl { grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+.map-shell.drawer-open .map-legend { display: none; }
+.map-panel .chips .chip { min-height: 34px; }
+.map-panel h3 { font-size: 0.92rem; color: var(--ink-2); }
+.map-panel .notice { font-size: 0.82rem; }
+.map-panel .doc-links { margin-top: auto; }
+
+@media (max-width: 1100px) {
+  .map-drawer { left: 1rem; right: 1rem; width: auto; top: auto; bottom: 7.4rem; max-height: 60%; }
+  .map-shell.drawer-open .map-panel { display: none; }
+}
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.35); }
@@ -1052,6 +1238,10 @@ dl.metric.compact .metric-help { display: none; }
   .timeline { position: relative; order: 2; left: auto; right: auto; bottom: auto; margin: 0.6rem; grid-template-columns: auto 1fr; }
   .timeline-label { grid-column: 1 / -1; text-align: left; }
   .map-panel { position: relative; order: 3; top: auto; left: auto; bottom: auto; width: auto; margin: 0 0.6rem 1rem; overflow: visible; }
+  .map-page main { overflow-x: hidden; }
+  .map-drawer { position: relative; order: 3; top: auto; left: auto; right: auto; bottom: auto; width: auto; max-height: none; margin: 0 0.6rem 1rem; overflow: visible; }
+  .map-shell.drawer-open .map-panel { display: flex; order: 4; }
+  .map-drawer .detail-card dl { grid-template-columns: 1fr; }
 }
 
 /* ---------- briefing ---------- */
