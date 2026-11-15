@@ -124,6 +124,16 @@ Each page requests only the tables it draws.
 7. When gold Parquet exists, run the export in the Codespace and reload.
 8. Twilio (optional). The map's side column has **Send this briefing to a phone**: it sends the headline sentence and a link to the same view as a text, a WhatsApp message, or a phone call that reads it aloud (`functions/api/notify.js`). It stays off until these are set on the Pages project as **secrets** (Settings → Variables and Secrets), on Production and Preview, followed by a redeploy: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (the Twilio number, `+1…`), `TWILIO_RECIPIENTS` (`Name=+1…,Name=+1…`, the only phones it will send to), and `TWILIO_LIVE=true`. The page shows the names, never the numbers. On a Twilio trial account each recipient must be a verified number. WhatsApp uses Twilio's sandbox (`+1 415 523 8886`) unless `TWILIO_WHATSAPP_FROM` is set. These are Pages settings, not Codespaces secrets; never commit them.
 
+## Chat assistant (Gemini)
+
+- Page `web/chat.html` (nav entry "Ask") plus a floating button on every other page (`web/chat.js`, `web/chat.css`, injected by `web/nav.js`). One shared conversation, kept in `sessionStorage`.
+- `POST /api/chat` (`functions/api/chat.js`) calls the Gemini REST API. Default model `gemini-3.5-flash-lite`, the cheapest listed in `docs/gemini_models.md`; override with `GEMINI_MODEL`.
+- System prompt = `web/chat_context.txt`, written from the Argentina docs. **When the numbers or rules in those docs change, update that file.**
+- Key: set `GEMINI_API_KEY` as a **secret** on the Pages project, on Production and on Preview (Settings → Variables and Secrets). Never commit it. Without it the route answers 503 and the widget shows a friendly error.
+- Local: `python scripts/dev_server.py` mirrors the route and reads the key from `.env` (`GEMINI_API_KEY=` or the line `API KEY = ...`). With `wrangler pages dev`, put `GEMINI_API_KEY=...` in `.dev.vars` (gitignored).
+- Guards: same-origin check, 12 questions per minute per IP (best effort, per Worker instance), 20 messages and 1,500 characters per message, 25 s timeout, Google error text never sent to the browser. For hard limits use a Cloudflare rate-limiting rule on `/api/chat`.
+- The assistant cannot look up a month or area. Data look-ups (tool calls over the gold tables) are future work.
+
 ## Easy to get wrong
 
 - The Pages project and the bucket have to be on the same Cloudflare account.

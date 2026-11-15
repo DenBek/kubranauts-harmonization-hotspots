@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Fire Calendar · Ask</title>
+  <script>try{var t=localStorage.getItem("fire-calendar-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mvp.css">
+  <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+  <header id="site-header"></header>
+  <main id="main">
+    <div class="page-head">
+      <p class="eyebrow">Argentina, 2003 to today</p>
+      <h1>Ask about the fire record</h1>
+      <p class="lede">Ask in plain words how the MODIS and VIIRS satellite counts were joined into one record, what the calendar symbols mean, and how far to trust the numbers.</p>
+    </div>
+
+    <div class="chat-page-grid">
+      <section class="card chat-page-card" aria-label="Chat with the assistant">
+        <div id="chat-page"></div>
+      </section>
+
+      <aside class="card chat-side" aria-label="About the assistant">
+        <h2>What it knows</h2>
+        <ul>
+          <li>Why the two cameras need harmonizing</li>
+          <li>The method and its test results</li>
+          <li>What each calendar symbol and flag means</li>
+          <li>The limits: what the data cannot tell you</li>
+        </ul>
+        <h2>What it can't do</h2>
+        <ul>
+          <li>Look up a number for one month or area. Use <a href="regions.html">Fire calendar</a> or <a href="draw.html">Draw an area</a>.</li>
+          <li>Say anything about places other than Argentina.</li>
+        </ul>
+        <p class="card-sub">Answers come from an AI model reading our project notes. Check important numbers on <a href="accuracy.html">How accurate is it?</a></p>
+      </aside>
+    </div>
+  </main>
+  <script src="gold.js"></script>
+  <script src="charts.js"></script>
+  <script src="nav.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>
