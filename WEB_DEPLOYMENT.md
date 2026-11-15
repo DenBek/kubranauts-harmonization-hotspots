@@ -122,7 +122,17 @@ Each page requests only the tables it draws.
 5. Settings → Bindings → R2. Variable name `FIRMS`, bucket `firms-data`, on Production and on Preview. Leave the bucket private. Do not paste the R2 keys.
 6. Deploy. Later pushes to `main` publish on their own. Pull requests get a preview URL. No GitHub Actions workflow.
 7. When gold Parquet exists, run the export in the Codespace and reload.
-8. Twilio stays off. To send later, set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`, and `TWILIO_LIVE=true` on the Pages project, then fill in the marked request in `functions/api/notify.js`. Those values are Pages environment variables, not Codespaces secrets.
+8. Twilio (optional). The map's side column has **Send this briefing to a phone**: it sends the headline sentence and a link to the same view as a text, a WhatsApp message, or a phone call that reads it aloud (`functions/api/notify.js`). It stays off until these are set on the Pages project as **secrets** (Settings → Variables and Secrets), on Production and Preview, followed by a redeploy: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (the Twilio number, `+1…`), `TWILIO_RECIPIENTS` (`Name=+1…,Name=+1…`, the only phones it will send to), and `TWILIO_LIVE=true`. The page shows the names, never the numbers. On a Twilio trial account each recipient must be a verified number. Only **Call** is offered unless `TWILIO_CHANNELS` lists more (`call,sms,whatsapp`): US texts are blocked by carriers until the Twilio number is registered for A2P 10DLC, and WhatsApp needs the recipient to join Twilio's sandbox (`+1 415 523 8886`, or `TWILIO_WHATSAPP_FROM`). `GET /api/notify` shows which settings the deployment can see (true/false, never values). These are Pages settings, not Codespaces secrets; never commit them.
+
+## Chat assistant (Gemini)
+
+- Page `web/chat.html` (nav entry "Ask") plus a floating button on every other page (`web/chat.js`, `web/chat.css`, injected by `web/nav.js`). One shared conversation, kept in `sessionStorage`.
+- `POST /api/chat` (`functions/api/chat.js`) calls the Gemini REST API. Default model `gemini-3.5-flash-lite`, the cheapest listed in `docs/gemini_models.md`; override with `GEMINI_MODEL`.
+- System prompt = `web/chat_context.txt`, written from the Argentina docs. **When the numbers or rules in those docs change, update that file.**
+- Key: set `GEMINI_API_KEY` as a **secret** on the Pages project, on Production and on Preview (Settings → Variables and Secrets). Never commit it. Without it the route answers 503 and the widget shows a friendly error.
+- Local: `python scripts/dev_server.py` mirrors the route and reads the key from `.env` (`GEMINI_API_KEY=` or the line `API KEY = ...`). With `wrangler pages dev`, put `GEMINI_API_KEY=...` in `.dev.vars` (gitignored).
+- Guards: same-origin check, 12 questions per minute per IP (best effort, per Worker instance), 20 messages and 1,500 characters per message, 25 s timeout, Google error text never sent to the browser. For hard limits use a Cloudflare rate-limiting rule on `/api/chat`.
+- The assistant cannot look up a month or area. Data look-ups (tool calls over the gold tables) are future work.
 
 ## Easy to get wrong
 
@@ -133,3 +143,7 @@ Each page requests only the tables it draws.
 - Parquet dates become ISO strings in the JSON.
 - A global cell file will not fit in the browser. Keep the demo slice.
 - `.dev.vars` and `.wrangler/` are gitignored. Do not commit keys.
+
+## Chat assistant
+
+`POST /api/chat` (`functions/api/chat.js`) calls Gemini with `web/chat_context.txt` and three lookup tools that read `publish/chat_lookup.json` through the `FIRMS` binding. Set `GEMINI_API_KEY` on the Pages project for Production and Preview (optional `GEMINI_MODEL`). After every gold rebuild run `scripts/export_calendar.py` so the lookup file is refreshed. Check a deploy with `python scripts/test_chat.py https://<your-site>`. Local preview: `python scripts/dev_server.py` (reads the key from `.env`).

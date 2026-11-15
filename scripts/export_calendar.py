@@ -212,18 +212,84 @@ def publish_one(con, s3, table, columns, local_dir=None):
     print(f"Wrote {len(rows)} rows to r2://{BUCKET}/publish/{table}.json")
 
 
+# ---------- chat lookup (publish/chat_lookup.json) ----------
+# A small file the chat assistant's tools read (functions/api/chat.js and scripts/dev_server.py). It is built from the
+# same gold Parquet files, so the chat can only say what the calendar says. Provisional months carry no anomaly
+# because gold_region_monthly already has none for them.
+
+CHAT_REGION_NAMES = {
+    "argentina": "Argentina (whole country)",
+    "ar_ne": "North-east (Corrientes, Misiones, Entre Ríos)",
+    "ar_nw": "North-west and western Chaco (Salta, Tucumán, Santiago del Estero)",
+    "ar_c": "Centre (Córdoba, Pampas, La Pampa)",
+    "ar_s": "Patagonia (south of 39°S)",
+    "ar_delta": "Paraná Delta (box)",
+}
+CHAT_MONTH_COLS = ["region", "year", "month", "value", "low", "high", "method", "flag", "coverage", "status",
+                   "ratio", "cls", "median", "rank", "n_ranked", "percentile"]
+CHAT_YEAR_COLS = ["region", "year", "total", "method", "is_partial", "is_complete", "rank", "n_ranked", "ratio",
+                  "peak_month", "season_start", "season_end", "low", "high"]
+
+
+def _location(s3, con, table, local_dir):
+    key = f"gold/{table}.parquet"
+    if local_dir is not None:
+        path = Path(local_dir) / f"{table}.parquet"
+        return path.as_posix() if path.exists() else None
+    return f"r2://{BUCKET}/{key}" if exists(s3, key, con) else None
+
+
+def publish_chat_lookup(con, s3, local_dir=None):
+    monthly = _location(s3, con, "gold_region_monthly", local_dir)
+    annual = _location(s3, con, "gold_region_annual", local_dir)
+    reliability = _location(s3, con, "gold_reliability", local_dir)
+    if not (monthly and annual and reliability):
+        print("Skip chat_lookup: gold_region_monthly, gold_region_annual and gold_reliability must all exist.")
+        return
+    months = con.sql(f"""SELECT region_id, year, month, harmonized_cell_days, harmonized_low, harmonized_high, method,
+        reliability, coverage, anomaly_status, anomaly_ratio, anomaly_class, baseline_median, rank_in_month,
+        n_years_ranked, percentile_rank FROM read_parquet('{monthly}') ORDER BY region_id, year, month""").fetchall()
+    years = con.sql(f"""SELECT region_id, year, harmonized_cell_days, method, is_partial, is_complete, rank, n_years_ranked,
+        anomaly_ratio, peak_month, season_start_month, season_end_month, harmonized_low, harmonized_high
+        FROM read_parquet('{annual}') ORDER BY region_id, year""").fetchall()
+    advice = {}
+    for flag, text in con.sql(f"SELECT reliability, suggestion FROM read_parquet('{reliability}')").fetchall():
+        advice.setdefault(flag, text)
+    payload = {
+        "source": "r2", "dataset": "chat_lookup", "note": "Built from gold_region_monthly, gold_region_annual and gold_reliability.",
+        "regions": CHAT_REGION_NAMES,
+        "month_cols": CHAT_MONTH_COLS, "months": [[encode(v) for v in row] for row in months],
+        "year_cols": CHAT_YEAR_COLS, "years": [[encode(v) for v in row] for row in years],
+        "advice": advice,
+    }
+    body = json.dumps(payload, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    if local_dir is not None:
+        out = Path(local_dir) / "publish" / "chat_lookup.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(body)
+        print(f"Wrote chat_lookup ({len(months)} months, {len(years)} years) to {out} ({len(body) / 1e3:.0f} KB)")
+        return
+    if s3 is None:
+        put_text(con, "publish/chat_lookup.json", body.decode("utf-8"))
+    else:
+        s3.put_object(Bucket=BUCKET, Key="publish/chat_lookup.json", Body=body, ContentType="application/json")
+    print(f"Wrote chat_lookup ({len(body) / 1e3:.0f} KB) to r2://{BUCKET}/publish/chat_lookup.json")
+
+
 def main():
     if "--local" in sys.argv:
         local_dir = sys.argv[sys.argv.index("--local") + 1]
         con = duckdb.connect()
         for table, columns in TABLES.items():
             publish_one(con, None, table, columns, local_dir=local_dir)
+        publish_chat_lookup(con, None, local_dir=local_dir)
         return
     require_env()
     s3 = None if "--via-duckdb" in sys.argv else client()
     con = connect()
     for table, columns in TABLES.items():
         publish_one(con, s3, table, columns)
+    publish_chat_lookup(con, s3)
     print("Reload the website. A redeploy is not required.")
 
 

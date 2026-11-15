@@ -239,3 +239,7 @@ tmp_ml/
 # Throwaway screenshots and patch scripts from local page checks
 tmp_*.png
 tmp_*.py
+
+# RAG local vector DB
+rag/chroma_db/
+web/tmp_seed.html

@@ -22,6 +22,7 @@ All data is in the Cloudflare R2 bucket `firms-data`.
 | `gold/gold_region_headline.parquet` | One summary sentence per region. |
 | `gold/gold_calibration.parquet` | Monthly VIIRS-to-MODIS ratios and the fit evidence. |
 | `publish/gold_*.json` | The JSON the website reads. Written by `scripts/export_calendar.py` from the matching gold Parquet file. Until that object exists, the site uses the sample in `web/sample/`. |
+| `publish/chat_lookup.json` | Slim copy of the monthly, annual and reliability rows (about 200 KB) that the chat assistant's lookup tools read. Written by `scripts/export_calendar.py`. |
 
 ## Where to start
 

@@ -1113,6 +1113,16 @@ dl.metric.compact .metric-help { display: none; }
 .home-side .side-section { border-top: 1px solid var(--line); padding-top: 0.8rem; }
 .home-side .side-section + .side-section { margin-top: 0.8rem; }
 .home-side .doc-links { margin: 0; }
+.send-card { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; }
+.send-card summary { display: flex; align-items: center; gap: 0.45rem; cursor: pointer; font-weight: 650; font-size: 0.92rem; }
+.send-card[open] summary { margin-bottom: 0.6rem; }
+.send-card .sms-bubble { margin: 0 0 0.6rem; max-width: none; font-size: 0.88rem; }
+.send-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 0.8rem; margin-bottom: 0.6rem; }
+.send-row select { min-height: 36px; min-width: 9rem; font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.send-card #send-status { margin: 0.5rem 0 0; }
+.send-card #send-status:empty { display: none; }
+.home-shell #send-go { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.home-shell #send-go[aria-busy="true"] { opacity: 0.6; cursor: progress; }
 
 /* calm basemap: grey tiles; outside Argentina is washed out by a mask drawn in home.js */
 .home-shell .leaflet-tile-pane { filter: grayscale(1) contrast(0.9) brightness(1.04); opacity: 0.8; }

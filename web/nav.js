@@ -12,6 +12,7 @@
     ["regions", "Fire calendar"],
     ["index", "Draw an area", "draw"],
     ["accuracy", "How accurate is it?"],
+    ["chat", "Ask"],
     ["glossary", "Words used"],
     // The old Map page lives at map-old.html (no nav entry).
     // Hidden from the nav (still in the repo): overview, year and briefing depend on the analogs table, which the
@@ -108,6 +109,19 @@
   }
 
   paintToggle();
+
+  // Floating assistant button on every page except the full chat page (chat.html mounts its own).
+  if (path !== "chat" && !window.FireChat && !document.getElementById("chat-script")) {
+    var chatCss = document.createElement("link");
+    chatCss.rel = "stylesheet";
+    chatCss.href = "chat.css";
+    document.head.appendChild(chatCss);
+    var chatJs = document.createElement("script");
+    chatJs.id = "chat-script";
+    chatJs.src = "chat.js";
+    chatJs.defer = true;
+    document.body.appendChild(chatJs);
+  }
 
   // <span data-icon="map"></span> in the HTML becomes the inline icon.
   document.querySelectorAll("[data-icon]").forEach(function (node) {
