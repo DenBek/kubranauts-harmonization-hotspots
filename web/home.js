@@ -474,8 +474,8 @@
     { value: "whatsapp", label: "WhatsApp" },
     { value: "call", label: "Call" },
   ];
-  var DONE = { sms: "Text sent to ", whatsapp: "WhatsApp message sent to ", call: "Calling " };
-  var send = { live: false, channel: "sms", busy: false };
+  var DONE = { sms: "Text handed to Twilio for ", whatsapp: "WhatsApp message handed to Twilio for ", call: "Calling " };
+  var send = { live: false, channel: "call", busy: false };
 
   // The same words as the headline, so the phone and the page never disagree.
   function briefingText() {
@@ -488,14 +488,23 @@
 
   function offNote() { return "Sending is off on this copy of the site (Twilio is not set up here). The text above is exactly what would be sent."; }
 
-  function initSend() {
-    segmented(document.getElementById("send-channel"), CHANNELS, send.channel, function (v) {
+  // Only the ways this site allows (TWILIO_CHANNELS on the Pages project; call alone by default).
+  function paintChannels(allowed) {
+    var opts = CHANNELS.filter(function (c) { return allowed.indexOf(c.value) > -1; });
+    if (!opts.length) opts = CHANNELS.filter(function (c) { return c.value === "call"; });
+    if (!opts.some(function (c) { return c.value === send.channel; })) send.channel = opts[0].value;
+    segmented(document.getElementById("send-channel"), opts, send.channel, function (v) {
       send.channel = v;
       sendStatus(v === "whatsapp" && send.live ? "WhatsApp uses Twilio's sandbox: the phone must first send its join code to +1 415 523 8886." : "");
     });
+  }
+
+  function initSend() {
+    paintChannels(["call"]);
     var to = document.getElementById("send-to");
     fetch("/api/notify").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (cfg) {
       send.live = !!cfg.live;
+      paintChannels(cfg.channels || ["call"]);
       to.innerHTML = "";
       (cfg.recipients || []).forEach(function (name) { to.appendChild(el("option", { value: name, text: name })); });
       if (!send.live || !to.options.length) { to.appendChild(el("option", { value: "", text: "Not set up" })); sendStatus(offNote()); }
